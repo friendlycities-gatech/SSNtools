@@ -1,0 +1,25 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1633446866680.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "DA6C9542",
+    "lastKnownWriteTime" : 1633446909,
+    "last_content_update" : 1633446909883,
+    "path" : "~/Dropbox (GaTech)/GT_Research/Edge_Scan/GitHub/SSNHotSpot/data-raw/DATASET.R",
+    "project_path" : "data-raw/DATASET.R",
+    "properties" : {
+        "cursorPosition" : "14,47",
+        "scrollLine" : "0"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 5,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

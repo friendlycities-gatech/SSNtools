@@ -1,0 +1,96 @@
+#----------------------------------------------#
+#-----Import Utility Functions ----------------#
+#----------------------------------------------#
+source("utils.R")
+
+#----------------------------------------------#
+# -----Process input data to correct format ---#
+#----------------------------------------------#
+
+#------Each node is stored a named list ------#
+#------nodes is a list of named list ---------#
+#=-----The process returns a list of named lists with the named key as label
+data = read.csv('/Users/xiaofanliang/Dropbox (GaTech)/GT_Research/Edge_Scan/Filtered_MafiaNodes.csv')
+data = read.csv('/Users/xiaofanliang/Dropbox (GaTech)/GT_Research/Edge_Scan/Filtered_MafiaEdges.csv')
+
+nodes = processNode(data, 'label', 'lon', 'lat')
+edges = processEdge(data, 'Source', 'Target')
+
+#data: R dataframe 
+#label_name: a string that indicate the column with node label 
+#lon_name: a float that indicates the column with longitude 
+#lat_name: a float that indicates the column with latitude 
+
+
+
+  
+#----TEST CODES ------#
+kk = edgeScanRadius(nodes, edges, 500)
+sum(kk$heat)
+kk = edgeScanKNearest(nodes, edges, 10)
+sum(kk$heat)
+kk = edgeScanManhattan(nodes, edges, 500)
+sum(kk$heat)
+kk = NDScanRadius(nodes, edges, 500)
+sum(kk$heat)
+kk = NDScanKNearest(nodes, edges, 10)
+sum(kk$heat)
+kk = NDScanManhattan(nodes, edges, 500)
+sum(kk$heat)
+
+
+
+#return a list of lists.
+data = read.csv('/Users/xiaofanliang/Dropbox (GaTech)/GT_Research/Edge_Scan/Filtered_MafiaEdges.csv')
+data$Source = as.character(data$Source)
+data$Target = as.character(data$Target)
+  
+data2 = as.list(data)
+edges = list()
+
+for (i in 1:nrow(data)) {
+  edge = list('Source' = data2$Source[i], 'Target' = data2$Target[i]) #this is the only way to assign key by variable name
+  edges[[length(edges) + 1]] = edge
+}
+
+#To retrieve one edge 
+edges[[1]]
+
+#To retrieve the value of an edge 
+nodes[[1]][['Source']]
+
+#edges = edges %>% 
+#  mutate(ID = row_number()) %>% 
+#  group_split(ID, .keep=FALSE)
+#edges[[1]]
+
+# ---- EXPORT FILTERED NODES -----#
+library(openxlsx)
+data = read.xlsx('/Users/xiaofanliang/Dropbox (GaTech)/GT_Research/Edge_Scan/TheData.xlsx')
+nodes = data %>% select(c(Label, Lat, Lon)) %>% slice(1:298) %>% 
+  rename(lon=Lon, lat=Lat, label=Label) %>% 
+  #read.csv('/Users/xiaofanliang/Dropbox (GaTech)/GT_Research/Edge_Scan/MafiaNodes.csv') %>% 
+  #filter(NODE %in% data$Label) %>% 
+  #rename(lon=LonX, lat=LatY, label=NODE) %>% 
+  mutate(label = as.character(label)) %>% 
+  select(c(label, lon, lat)) %>% 
+  st_as_sf(coords=c('lon', 'lat'), crs=4326) %>% 
+  st_transform(crs=32118) %>% #NAD 83: New York Long Island Unit Meter 
+  mutate(lon = sf::st_coordinates(.)[,2], lat = sf::st_coordinates(.)[,1]) %>% 
+  st_drop_geometry()
+
+write.csv(nodes, file='/Users/xiaofanliang/Dropbox (GaTech)/GT_Research/Edge_Scan/Filtered_MafiaNodes.csv', row.names = FALSE)
+
+#946 rather than 936. 
+edges = read.csv('/Users/xiaofanliang/Dropbox (GaTech)/GT_Academics/Spatial_Networks/MafiaLab/MafiaEdges.csv') %>% 
+  filter((Source %in% data$Label) & (Target %in% data$Label) & (Source != Target)) %>% 
+  distinct_at(vars(Source, Target)) %>% 
+  graph_from_data_frame(directed=FALSE)
+
+edges = as.data.frame(get.edgelist(edges)) %>% distinct_at(vars(V1, V2)) %>% 
+  rename(Source = V1, Target = V2)
+
+write.csv(edges, file='/Users/xiaofanliang/Dropbox (GaTech)/GT_Research/Edge_Scan/Filtered_MafiaEdges.csv', row.names = FALSE)
+
+
+

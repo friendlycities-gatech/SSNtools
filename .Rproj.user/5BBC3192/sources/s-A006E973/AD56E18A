@@ -1,0 +1,25 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1633466672875.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "AD56E18A",
+    "lastKnownWriteTime" : 1633466672,
+    "last_content_update" : 1633466672,
+    "path" : "~/Dropbox (GaTech)/GT_Research/Edge_Scan/GitHub/SSNHotSpot/vignettes/SSNHotSpot.Rmd",
+    "project_path" : "vignettes/SSNHotSpot.Rmd",
+    "properties" : {
+        "cursorPosition" : "4,34",
+        "scrollLine" : "0"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 7,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_markdown"
+}
