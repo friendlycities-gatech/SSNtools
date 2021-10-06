@@ -1,23 +1,3 @@
-#------------------------------------------#
-#---------------Main Functions ------------#
-#------------------------------------------#
-
-#' @title processNode
-#' @description process user_nodes to correct format for hotspot detection algorithm
-#' @param data user_nodes, which should be a R dataframe that contains a column of node label, a column of node longitude, and a column of node latitude
-#' @param label_name column name (string) that contains the node labels
-#' @param lon_name column name (float) that contains the node longitude 
-#' @param lat_name column name (float) that contains the node latitude
-#' @return a list of named lists, in which the name for each list is the node label. The sublist contains all info of a node
-#' @details DETAILS
-#' @examples 
-#' \dontrun{
-#' nodes = processNode(user_nodes, 'label', 'lon', 'lat')
-#' nodes[[1]] 
-#' nodes[['YOUR NODE LABEL']][['lon']]
-#' }
-#' @rdname processNode
-#' @export 
 processNode = function(data, label_name, lon_name, lat_name) {
   #convert columns to the right data format
   names(data)[names(data) == label_name] <- "label"
@@ -31,7 +11,7 @@ processNode = function(data, label_name, lon_name, lat_name) {
   data2 = as.list(data)
   nodes = list()
   
-  for (i in 1:nrow(data)) {
+  for (i in 1:nrow(data)) { 
     temp = list()
     label = as.character(data2$label[i])
     node = list('label' = label, 'lon' = data2$lon[i], 'lat'= data2$lat[i])
@@ -41,22 +21,15 @@ processNode = function(data, label_name, lon_name, lat_name) {
   return(nodes)
 }
 
+#To retrieve one node with key
+#nodes[[1]]
+
+#To retrieve the values of a node 
+#nodes[['YOUR LABEL']][['label']]
+
 #data: R dataframe 
 #source_name: a string that indicates the column with the source node label 
 #target_name: a string that indicates the column with the target node label
-#' @title processEdge
-#' @description convert a R dataframe with two columns (Source name and Target name) to correct formats for following algorithms
-#' @param data user_edges, which should be a R dataframe that contains a column of source (string of node label) and a column of target (string of node label)
-#' @param source_name column name (string) that contains the source node labels
-#' @param target_name column name (string) that contains the target node labels
-#' @return a list of lists. Each sublist contains all info of an edge
-#' @details DETAILS
-#' @examples 
-#' \dontrun{
-#' edges = processEdge(user_edges, 'Source', 'Target')
-#' }
-#' @rdname processEdge
-#' @export 
 processEdge = function(data, source_name, target_name) {
   data$Source = as.character(data$Source)
   data$Target = as.character(data$Target)
@@ -71,23 +44,18 @@ processEdge = function(data, source_name, target_name) {
   return(edges)
 }
 
-#' @title EdgeScanRadius
-#' @description edgeScan - generates heatmap of edges within maxRadius of every node in a graph
-#' @param nodes nodes of graph (a list of named lists)
-#' @param edges edges of graph (a list of lists)
-#' @param maxRadius radius in the unit of coordinates of search window
-#' @return a R dataframe that contains a column of node label, and a column of heat associated with the node
-#' @details DETAILS
-#' @examples 
-#' \dontrun{
-#' edgeScanRadius(nodes, edges, 500) 
-#'  }
-#' }
-#' @rdname edgeScanRadius
-#' @export 
+#------------------------------------------#
+#---------------Main Functions ------------#
+#------------------------------------------#
+
+# edgeScan - generates heatmap of edges within maxRadius of every node in a graph
+# params:
+#     nodes - nodes of graph
+#     edges - edges of graph
+#     maxRadius - radius in km of search window
+
 edgeScanRadius = function(nodes, edges, maxRadius) {
   if(!inherits(nodes, "list") | !inherits(edges, "list")) {
-    print('hi')
     stop('nodes or edges need to be a list of lists. Please use processNode or processEdge to convert R dataframe to a list of lists')
   }
   visitedNodes = list()
@@ -113,22 +81,14 @@ edgeScanRadius = function(nodes, edges, maxRadius) {
   return(heat)
 }
 
-#' @title edgeScanKNearest
-#' @description generates heatmap of edges between k nearest nodes to each independent node in a graph
-#' @param nodes nodes of graph (a list of named lists)
-#' @param edges edges of graph (a list of lists)
-#' @param k number of nodes in search window
-#' @return a R dataframe that contains a column of node label, and a column of heat associated with the node
-#' @details 
-#' @examples 
-#' \dontrun{
-#' edgeScanKNearest(nodes, edges, 10)
-#' }
-#' @rdname edgeScanKNearest
-#' @export 
+# edgeScan - generates heatmap of edges between k nearest nodes to each independent node in a graph
+# params:
+#     nodes - nodes of graph
+#     edges - edges of graph
+#     k - number of nodes in search window
+
 edgeScanKNearest = function(nodes, edges, k) {
   if(!inherits(nodes, "list") | !inherits(edges, "list")) {
-    print('hi')
     stop('nodes or edges need to be a list of lists. Please use processNode or processEdge to convert R dataframe to a list of lists')
   }
   visitedNodes = list()
@@ -163,24 +123,8 @@ edgeScanKNearest = function(nodes, edges, k) {
 #     nodes - nodes of graph
 #     edges - edges of graph
 #     distance - manhattan distance in km of search window
-#' @title FUNCTION_TITLE
-#' @description FUNCTION_DESCRIPTION
-#' @param nodes PARAM_DESCRIPTION
-#' @param edges PARAM_DESCRIPTION
-#' @param distance PARAM_DESCRIPTION
-#' @return OUTPUT_DESCRIPTION
-#' @details DETAILS
-#' @examples 
-#' \dontrun{
-#' if(interactive()){
-#'  #EXAMPLE1
-#'  }
-#' }
-#' @rdname edgeScanManhattan
-#' @export 
 edgeScanManhattan = function(nodes, edges, distance) {
   if(!inherits(nodes, "list") | !inherits(edges, "list")) {
-    print('hi')
     stop('nodes or edges need to be a list of lists. Please use processNode or processEdge to convert R dataframe to a list of lists')
   }
   visitedNodes = list()
@@ -208,24 +152,8 @@ edgeScanManhattan = function(nodes, edges, distance) {
 # This is the ratio between the Actual Connections and the Potential Connections in a network.
 # 
 # Below are the three implementations of this, using radius, K-nearest, and Manhattan distance metrics.
-#' @title FUNCTION_TITLE
-#' @description FUNCTION_DESCRIPTION
-#' @param nodes PARAM_DESCRIPTION
-#' @param edges PARAM_DESCRIPTION
-#' @param radius PARAM_DESCRIPTION
-#' @return OUTPUT_DESCRIPTION
-#' @details DETAILS
-#' @examples 
-#' \dontrun{
-#' if(interactive()){
-#'  #EXAMPLE1
-#'  }
-#' }
-#' @rdname NDScanRadius
-#' @export 
 NDScanRadius = function(nodes, edges, radius) {
   if(!inherits(nodes, "list") | !inherits(edges, "list")) {
-    print('hi')
     stop('nodes or edges need to be a list of lists. Please use processNode or processEdge to convert R dataframe to a list of lists')
   }
   visitedNodes = list()
@@ -265,24 +193,8 @@ NDScanRadius = function(nodes, edges, radius) {
   return(heat)
 }
 
-#' @title FUNCTION_TITLE
-#' @description FUNCTION_DESCRIPTION
-#' @param nodes PARAM_DESCRIPTION
-#' @param edges PARAM_DESCRIPTION
-#' @param k PARAM_DESCRIPTION
-#' @return OUTPUT_DESCRIPTION
-#' @details DETAILS
-#' @examples 
-#' \dontrun{
-#' if(interactive()){
-#'  #EXAMPLE1
-#'  }
-#' }
-#' @rdname NDScanKNearest
-#' @export 
 NDScanKNearest = function(nodes, edges, k) {
   if(!inherits(nodes, "list") | !inherits(edges, "list")) {
-    print('hi')
     stop('nodes or edges need to be a list of lists. Please use processNode or processEdge to convert R dataframe to a list of lists')
   }
   visitedNodes = list()
@@ -314,24 +226,8 @@ NDScanKNearest = function(nodes, edges, k) {
   return(heat)
 }
 
-#' @title FUNCTION_TITLE
-#' @description FUNCTION_DESCRIPTION
-#' @param nodes PARAM_DESCRIPTION
-#' @param edges PARAM_DESCRIPTION
-#' @param distance PARAM_DESCRIPTION
-#' @return OUTPUT_DESCRIPTION
-#' @details DETAILS
-#' @examples 
-#' \dontrun{
-#' if(interactive()){
-#'  #EXAMPLE1
-#'  }
-#' }
-#' @rdname NDScanManhattan
-#' @export 
 NDScanManhattan = function(nodes, edges, distance) {
   if(!inherits(nodes, "list") | !inherits(edges, "list")) {
-    print('hi')
     stop('nodes or edges need to be a list of lists. Please use processNode or processEdge to convert R dataframe to a list of lists')
   }
   visitedNodes = list()

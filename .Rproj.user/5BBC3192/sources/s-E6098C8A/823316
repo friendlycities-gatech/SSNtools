@@ -1,0 +1,25 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1633546811179.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "823316",
+    "lastKnownWriteTime" : 1633547966,
+    "last_content_update" : 1633547966618,
+    "path" : "~/Dropbox (GaTech)/GT_Research/Edge_Scan/GitHub/SSNtools/tests/testthat/test-SSNtools.R",
+    "project_path" : "tests/testthat/test-SSNtools.R",
+    "properties" : {
+        "cursorPosition" : "44,41",
+        "scrollLine" : "22"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 4,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

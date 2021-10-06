@@ -39,8 +39,9 @@ edges = processEdge(example_edges, 'Source', 'Target')
 result = NDScanRadius(nodes, edges, 500)
 ```
 
-#### Available Functions 
-```{r example}
+#### Other Available Functions 
+Currently available functions in SSNtools for SSN hotspot detection:
+```{r more_examples}
 library(SSNtools)
 #-----calculates network density within 10 nearest neighbors of each node in a network
 result = NDScanKNearest(nodes, edges, 10)
@@ -57,6 +58,7 @@ result = edgeScanKNearest(nodes, edges, 10)
 #-----calculates the density of edges within a radius (500 meters - Manhattan distance) of each node in a network
 result = edgeScanManhattan(nodes, edges, 500)
 ```
+
 
 #### Future Updates 
 This package is developed under NSF Career Grant: A Research and Educational Framework for Incorporating Spatial Heterogeneity into Social Network Analysis. More spatial social network metrics will be incorporated in the package in the near future.  

@@ -1,25 +1,24 @@
 {
     "collab_server" : "",
     "contents" : "",
-    "created" : 1633445017307.000,
+    "created" : 1633549039107.000,
     "dirty" : false,
     "encoding" : "UTF-8",
     "folds" : "",
     "hash" : "0",
-    "id" : "D7CDE4B2",
+    "id" : "2F68EF5C",
     "lastKnownWriteTime" : 1633490873,
-    "last_content_update" : 1633490873029,
-    "path" : "~/Dropbox (GaTech)/GT_Research/Edge_Scan/GitHub/SSNHotSpot/R/SSNHotSpot.R",
-    "project_path" : null,
+    "last_content_update" : 1633490873,
+    "path" : "~/Dropbox (GaTech)/GT_Research/Edge_Scan/GitHub/SSNtools/R/SSNtools.R",
+    "project_path" : "R/SSNtools.R",
     "properties" : {
-        "cursorPosition" : "50,81",
-        "scrollLine" : "0",
-        "tempName" : "Untitled1"
+        "cursorPosition" : "239,58",
+        "scrollLine" : "229"
     },
     "read_only" : false,
     "read_only_alternatives" : [
     ],
-    "relative_order" : 1,
+    "relative_order" : 4,
     "source_on_save" : false,
     "source_window" : "",
     "type" : "r_source"

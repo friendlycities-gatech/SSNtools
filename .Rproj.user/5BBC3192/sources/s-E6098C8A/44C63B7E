@@ -1,0 +1,25 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1633549063455.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "44C63B7E",
+    "lastKnownWriteTime" : 1633549068,
+    "last_content_update" : 1633549068957,
+    "path" : "~/Dropbox (GaTech)/GT_Research/Edge_Scan/GitHub/SSNtools/R/oxy-SSNtools.R",
+    "project_path" : "R/oxy-SSNtools.R",
+    "properties" : {
+        "cursorPosition" : "343,58",
+        "scrollLine" : "333"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 6,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}
