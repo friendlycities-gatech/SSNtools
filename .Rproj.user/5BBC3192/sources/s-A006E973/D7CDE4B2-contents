@@ -11,7 +11,7 @@ processNode = function(data, label_name, lon_name, lat_name) {
   data2 = as.list(data)
   nodes = list()
   
-  for (i in 1:nrow(data)) {
+  for (i in 1:nrow(data)) { 
     temp = list()
     label = as.character(data2$label[i])
     node = list('label' = label, 'lon' = data2$lon[i], 'lat'= data2$lat[i])
@@ -55,6 +55,9 @@ processEdge = function(data, source_name, target_name) {
 #     maxRadius - radius in km of search window
 
 edgeScanRadius = function(nodes, edges, maxRadius) {
+  if(!inherits(nodes, "list") | !inherits(edges, "list")) {
+    stop('nodes or edges need to be a list of lists. Please use processNode or processEdge to convert R dataframe to a list of lists')
+  }
   visitedNodes = list()
   labels = c()
   numedges = c()
@@ -72,6 +75,9 @@ edgeScanRadius = function(nodes, edges, maxRadius) {
     runningNode = nearestUnvisitedNeighbor(nodes, visitedNodes, runningNode)
   }
   heat = data.frame('label' = labels, 'heat' = numedges)
+  if(abs(nodes[[1]][['lat']]) <= 180) {
+    warning("Distance is calculated in the unit of the coordinates, which may need to be projected into other units")
+  }
   return(heat)
 }
 
@@ -82,6 +88,9 @@ edgeScanRadius = function(nodes, edges, maxRadius) {
 #     k - number of nodes in search window
 
 edgeScanKNearest = function(nodes, edges, k) {
+  if(!inherits(nodes, "list") | !inherits(edges, "list")) {
+    stop('nodes or edges need to be a list of lists. Please use processNode or processEdge to convert R dataframe to a list of lists')
+  }
   visitedNodes = list()
   labels = c()
   numedges = c()
@@ -115,6 +124,9 @@ edgeScanKNearest = function(nodes, edges, k) {
 #     edges - edges of graph
 #     distance - manhattan distance in km of search window
 edgeScanManhattan = function(nodes, edges, distance) {
+  if(!inherits(nodes, "list") | !inherits(edges, "list")) {
+    stop('nodes or edges need to be a list of lists. Please use processNode or processEdge to convert R dataframe to a list of lists')
+  }
   visitedNodes = list()
   labels = c()
   numedges = c()
@@ -129,6 +141,9 @@ edgeScanManhattan = function(nodes, edges, distance) {
     runningNode = nearestUnvisitedNeighbor(nodes, visitedNodes, runningNode)
   }
   heat = data.frame('label' = labels, 'heat' = numedges)
+  if(abs(nodes[[1]][['lat']]) <= 180) {
+    warning("Distance is calculated in the unit of the coordinates, which may need to be projected into other units")
+  }
   return(heat)
 }
 
@@ -138,6 +153,9 @@ edgeScanManhattan = function(nodes, edges, distance) {
 # 
 # Below are the three implementations of this, using radius, K-nearest, and Manhattan distance metrics.
 NDScanRadius = function(nodes, edges, radius) {
+  if(!inherits(nodes, "list") | !inherits(edges, "list")) {
+    stop('nodes or edges need to be a list of lists. Please use processNode or processEdge to convert R dataframe to a list of lists')
+  }
   visitedNodes = list()
   labels = c()
   ndensity = c()
@@ -169,10 +187,16 @@ NDScanRadius = function(nodes, edges, radius) {
     runningNode = nearestUnvisitedNeighbor(nodes, visitedNodes, runningNode)
   }
   heat = data.frame('label' = labels, 'heat' = ndensity)
+  if(abs(nodes[[1]][['lat']]) <= 180) {
+    warning("Distance is calculated in the unit of the coordinates, which may need to be projected into other units")
+  }
   return(heat)
 }
 
 NDScanKNearest = function(nodes, edges, k) {
+  if(!inherits(nodes, "list") | !inherits(edges, "list")) {
+    stop('nodes or edges need to be a list of lists. Please use processNode or processEdge to convert R dataframe to a list of lists')
+  }
   visitedNodes = list()
   labels = c()
   ndensity = c()
@@ -203,6 +227,9 @@ NDScanKNearest = function(nodes, edges, k) {
 }
 
 NDScanManhattan = function(nodes, edges, distance) {
+  if(!inherits(nodes, "list") | !inherits(edges, "list")) {
+    stop('nodes or edges need to be a list of lists. Please use processNode or processEdge to convert R dataframe to a list of lists')
+  }
   visitedNodes = list()
   labels = c()
   ndensity = c()
@@ -230,5 +257,8 @@ NDScanManhattan = function(nodes, edges, distance) {
     runningNode = nearestUnvisitedNeighbor(nodes, visitedNodes, runningNode)
   }
   heat = data.frame('label' = labels, 'heat' = ndensity)
+  if(abs(nodes[[1]][['lat']]) <= 180) {
+    warning("Distance is calculated in the unit of the coordinates, which may need to be projected into other units")
+  }
   return(heat)
 }
