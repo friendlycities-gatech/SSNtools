@@ -1,3 +1,5 @@
+output: rmarkdown::github_document
+
 ## Hotspot Detection for Spatial Social (Non-planar) Networks 
 
 **SSNtools** is an R package that provides metrics for analyzing and visualizing spatial social networks. **SSNtools** is currently equipped with functions to calculate hotspots (i.e., heat) of spatial social networks. Traditional GIS hotspot detection methods (e.g. the Getis-Ord GI* statistic or Ripley’s K-function) only apply to point patterns, and yet, clustered nodes in network may not be connected. The goal for the current function of **SSNtools** is to detect the number of non-planar edges and the network density of a subset of a social network contained within a focal window. In another words, the algorithms return hotspots where nodes are not only densely located but also connected. 
