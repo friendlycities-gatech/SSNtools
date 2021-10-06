@@ -4,7 +4,7 @@
 
 # load required packages ----
 if (!require("pacman")) install.packages("pacman") 
-pacman::p_load(magrittr, dplyr, usethis, data.table, here)
+pacman::p_load(usethis, here)
 
 #------Each node is stored a named list ------#
 #------nodes is a list of named list ---------#
