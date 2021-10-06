@@ -1,6 +1,4 @@
 
-rmarkdown::render(“README.Rmd”)
-
 ## Hotspot Detection for Spatial Social (Non-planar) Networks
 
 **SSNHotSpot** is an R package that calculate hotspots (i.e., heat) of
