@@ -378,21 +378,21 @@ summary {
 </div>
 
 
-<div id="hotspot-detection-for-spatial-social-non-planar-networks" class="section level4">
-<h4>Hotspot Detection for Spatial Social (Non-planar) Networks</h4>
+<p>output: rmarkdown::github_document</p>
+<div id="hotspot-detection-for-spatial-social-non-planar-networks" class="section level2">
+<h2>Hotspot Detection for Spatial Social (Non-planar) Networks</h2>
 <p><strong>SSNHotSpot</strong> is an R package that calculate hotspots (i.e., heat) of spatial social networks.</p>
 <p>See paper <a href="https://arxiv.org/pdf/2011.07702.pdf">Spatial Social Networks (SSN) Hot Spot Detection: Scan Methods for Non-planar Networks</a> for detailed methodology.</p>
-</div>
-<div id="installation" class="section level2">
-<h2>Installation</h2>
+<div id="installation" class="section level4">
+<h4>Installation</h4>
 <p>You can install the released version of SSNHotSpot from <a href="https://CRAN.R-project.org">CRAN</a> with:</p>
 <pre class="r"><code>install.packages(&quot;SSNHotSpot&quot;)</code></pre>
 <p>And the development version from GitHub with:</p>
 <pre class="r"><code># install.packages(&quot;devtools&quot;)
 devtools::install_github(&quot;friendlycities-gatech/SSNHotSpot&quot;)</code></pre>
 </div>
-<div id="example" class="section level2">
-<h2>Example</h2>
+<div id="example" class="section level4">
+<h4>Example</h4>
 <p>This is a basic example which shows you how to use the main functions in SSNHotSpot. The package comes with an example dataset, which is a spatial social network of Mafia members in New York City in the 1960s. See <a href="https://drive.google.com/file/d/1guVURnryYUyXaJ3A7SoMFMpkv7CUx6He/view">here</a> for more details about the dataset. You can call <strong>example_nodes</strong> and <strong>example_edges</strong> to directly access the sample dataset.</p>
 <pre class="r"><code>library(SSNHotSpot)
 #process dataframe into a list of lists 
@@ -401,6 +401,7 @@ edges = processEdge(example_edges, &#39;Source&#39;, &#39;Target&#39;)
 
 #Calculates network density within a radius (500 meters) of each node in a network
 result = NDScanRadius(nodes, edges, 500)</code></pre>
+</div>
 </div>
 
 
