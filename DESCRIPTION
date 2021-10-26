@@ -19,3 +19,5 @@ RoxygenNote: 7.1.2
 Imports: 
     utils
 VignetteBuilder: knitr
+Depends: 
+    R (>= 2.10)

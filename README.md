@@ -2,19 +2,19 @@
 ## Hotspot Detection for Spatial Social (Non-planar) Networks
 
 **SSNtools** is an R package that provides metrics for analyzing and
-visualizing spatial social networks. 
+visualizing spatial social networks.
 
-**SSNtools** is currently equipped
-with functions to calculate hotspots (i.e., heat) of spatial social
-networks. Traditional GIS hotspot detection methods (e.g. the Getis-Ord
-GI\* statistic or Ripley’s K-function) only apply to point patterns, and
-yet, clustered nodes in network may not be connected. 
+**SSNtools** is currently equipped with functions to calculate hotspots
+(i.e., heat) of spatial social networks. Traditional GIS hotspot
+detection methods (e.g. the Getis-Ord GI\* statistic or Ripley’s
+K-function) only apply to point patterns, and yet, clustered nodes in
+network may not be connected.
 
-The goal for the
-current function of **SSNtools** is to detect the number of non-planar
-edges and the network density of a subset of a social network contained
-within a focal window. In another words, the algorithms return hotspots
-where nodes are not only densely located but also connected.
+The goal for the current function of **SSNtools** is to detect the
+number of non-planar edges and the network density of a subset of a
+social network contained within a focal window. In another words, the
+algorithms return hotspots where nodes are not only densely located but
+also connected.
 
 See paper [Spatial Social Networks (SSN) Hot Spot Detection: Scan
 Methods for Non-planar Networks](https://arxiv.org/pdf/2011.07702.pdf)
@@ -49,12 +49,12 @@ library(SSNtools)
 #     label_name - the name of the column for node label
 #     lon_name - the name of the column for node longitude 
 #     lat_name - the name of the column for node latitude
-nodes = processNode(example_nodes, 'label', 'lon', 'lat')
+nodes = processNode(NYCMafiaNodes, 'label', 'lon', 'lat')
 # params:
 #     edges - a R dataframe containing source node label and target node label
 #     source_name - the name of the column for source node label
 #     target_name - the name of the column for target node label
-edges = processEdge(example_edges, 'Source', 'Target')
+edges = processEdge(NYCMafiaEdges, 'Source', 'Target')
 
 #-----calculates network density within a radius (500 meters - Euclidean distance) of each node in a network
 # params:

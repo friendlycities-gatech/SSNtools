@@ -28,12 +28,12 @@ library(SSNtools)
 #     label_name - the name of the column for node label
 #     lon_name - the name of the column for node longitude 
 #     lat_name - the name of the column for node latitude
-nodes = processNode(example_nodes, 'label', 'lon', 'lat')
+nodes = processNode(NYCMafiaNodes, 'label', 'lon', 'lat')
 # params:
 #     edges - a R dataframe containing source node label and target node label
 #     source_name - the name of the column for source node label
 #     target_name - the name of the column for target node label
-edges = processEdge(example_edges, 'Source', 'Target')
+edges = processEdge(NYCMafiaEdges, 'Source', 'Target')
 
 #-----calculates network density within a radius (500 meters - Euclidean distance) of each node in a network
 # params:

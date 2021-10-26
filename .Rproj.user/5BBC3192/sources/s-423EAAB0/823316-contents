@@ -1,10 +1,21 @@
 context("run SSNtools with packaged dataset user_nodes and user_edges")
 
-data("example_nodes")
-data("example_edges")
+data("NYCMafiaNodes")
+data("NYCMafiaEdges")
 
-nodes <- processNode(example_nodes, 'label', 'lon', 'lat')
-edges <- processEdge(example_edges, 'Source', 'Target')
+data("MafiaNodes")
+data("MafiaEdges")
+
+test_that("MafiaNodes loaded successfully", {
+  expect_equal(nrow(MafiaNodes), 680)
+})
+
+test_that("MafiaEdges loaded successfully", {
+  expect_equal(nrow(MafiaEdges), 5398)
+})
+
+nodes <- processNode(NYCMafiaNodes, 'label', 'lon', 'lat')
+edges <- processEdge(NYCMafiaEdges, 'Source', 'Target')
 
 result <- edgeScanRadius(nodes, edges, 500)
 result2 <- NDScanRadius(nodes, edges, 500)

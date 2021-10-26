@@ -20,5 +20,7 @@
 #'   \item{Target}{the name (string) of the other connected Mafia member}
 #' }
 
-"example_nodes"
-"example_edges"
+"NYCMafiaNodes"
+"NYCMafiaEdges"
+"MafiaNodes"
+"MafiaEdges"
