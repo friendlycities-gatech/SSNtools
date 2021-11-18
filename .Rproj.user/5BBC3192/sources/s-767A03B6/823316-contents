@@ -14,7 +14,7 @@ test_that("MafiaEdges loaded successfully", {
   expect_equal(nrow(MafiaEdges), 5398)
 })
 
-nodes <- processNode(NYCMafiaNodes, 'label', 'lon', 'lat')
+nodes <- processNode(NYCMafiaNodes, 'label', 'LonX', 'LatY')
 edges <- processEdge(NYCMafiaEdges, 'Source', 'Target')
 
 result <- edgeScanRadius(nodes, edges, 500)

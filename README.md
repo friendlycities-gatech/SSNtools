@@ -37,8 +37,8 @@ dataset, which is a spatial social network of Mafia members in New York
 City in the 1960s. See [To racketeer among neighbors: spatial features
 of criminal collaboration in the American
 Mafia](https://drive.google.com/file/d/1guVURnryYUyXaJ3A7SoMFMpkv7CUx6He/view)
-for more details about the dataset. You can call **example\_nodes**
-(n=298) and **example\_edges**(n=946) to directly access the sample
+for more details about the dataset. You can call **NYCMafiaNodes**
+(n=298) and **NYCMafiaEdges**(n=946) to directly access the sample
 dataset. The coordinate unit of the sample dataset is **meter**.
 
 ``` r
@@ -49,7 +49,7 @@ library(SSNtools)
 #     label_name - the name of the column for node label
 #     lon_name - the name of the column for node longitude 
 #     lat_name - the name of the column for node latitude
-nodes = processNode(NYCMafiaNodes, 'label', 'lon', 'lat')
+nodes = processNode(NYCMafiaNodes, 'label', 'LonX', 'LatY')
 # params:
 #     edges - a R dataframe containing source node label and target node label
 #     source_name - the name of the column for source node label
