@@ -155,9 +155,6 @@ NDScanRadius = function(nodes, edges, radius) {
   if(!inherits(nodes, "list") | !inherits(edges, "list")) {
     stop('nodes or edges need to be a list of lists. Please use processNode or processEdge to convert R dataframe to a list of lists')
   }
-  if(FALSE %in% c(edges[['Source']] %in% nodes[['label']]) {
-    stop('nodes or edges need to be a list of lists. Please use processNode or processEdge to convert R dataframe to a list of lists')
-  }
   visitedNodes = list()
   labels = c()
   ndensity = c()
