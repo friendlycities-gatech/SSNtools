@@ -31,14 +31,12 @@ processNode = function(data, label_name, lon_name, lat_name) {
 #source_name: a string that indicates the column with the source node label 
 #target_name: a string that indicates the column with the target node label
 processEdge = function(data, source_name, target_name) {
-  data$Source = as.character(data$Source)
-  data$Target = as.character(data$Target)
   
   data2 = as.list(data)
   edges = list()
   
   for (i in 1:nrow(data)) {
-    edge = list('Source' = data2$Source[i], 'Target' = data2$Target[i]) #this is the only way to assign key by variable name
+    edge = list('Source' = data2[[source_name]][i], 'Target' = data2[[target_name]][i]) #this is the only way to assign key by variable name
     edges[[length(edges) + 1]] = edge
   }
   return(edges)
@@ -58,6 +56,7 @@ edgeScanRadius = function(nodes, edges, maxRadius) {
   if(!inherits(nodes, "list") | !inherits(edges, "list")) {
     stop('nodes or edges need to be a list of lists. Please use processNode or processEdge to convert R dataframe to a list of lists')
   }
+  
   visitedNodes = list()
   labels = c()
   numedges = c()
@@ -76,7 +75,7 @@ edgeScanRadius = function(nodes, edges, maxRadius) {
   }
   heat = data.frame('label' = labels, 'heat' = numedges)
   if(abs(nodes[[1]][['lat']]) <= 180) {
-    warning("Distance is calculated in the unit of the coordinates, which may need to be projected into other units")
+    warning("Distance may be calculated in the degree coordinates, which may need to be projected into other distance units")
   }
   return(heat)
 }
@@ -142,7 +141,7 @@ edgeScanManhattan = function(nodes, edges, distance) {
   }
   heat = data.frame('label' = labels, 'heat' = numedges)
   if(abs(nodes[[1]][['lat']]) <= 180) {
-    warning("Distance is calculated in the unit of the coordinates, which may need to be projected into other units")
+    warning("Distance may be calculated in the degree coordinates, which may need to be projected into other distance units")
   }
   return(heat)
 }
@@ -154,6 +153,9 @@ edgeScanManhattan = function(nodes, edges, distance) {
 # Below are the three implementations of this, using radius, K-nearest, and Manhattan distance metrics.
 NDScanRadius = function(nodes, edges, radius) {
   if(!inherits(nodes, "list") | !inherits(edges, "list")) {
+    stop('nodes or edges need to be a list of lists. Please use processNode or processEdge to convert R dataframe to a list of lists')
+  }
+  if(FALSE %in% c(edges[['Source']] %in% nodes[['label']]) {
     stop('nodes or edges need to be a list of lists. Please use processNode or processEdge to convert R dataframe to a list of lists')
   }
   visitedNodes = list()
@@ -188,7 +190,7 @@ NDScanRadius = function(nodes, edges, radius) {
   }
   heat = data.frame('label' = labels, 'heat' = ndensity)
   if(abs(nodes[[1]][['lat']]) <= 180) {
-    warning("Distance is calculated in the unit of the coordinates, which may need to be projected into other units")
+    warning("Distance may be calculated in the degree coordinates, which may need to be projected into other distance units")
   }
   return(heat)
 }
@@ -258,7 +260,7 @@ NDScanManhattan = function(nodes, edges, distance) {
   }
   heat = data.frame('label' = labels, 'heat' = ndensity)
   if(abs(nodes[[1]][['lat']]) <= 180) {
-    warning("Distance is calculated in the unit of the coordinates, which may need to be projected into other units")
+    warning("Distance may be calculated in the degree coordinates, which may need to be projected into other distance units")
   }
   return(heat)
 }

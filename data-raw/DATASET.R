@@ -9,8 +9,8 @@ pacman::p_load(usethis, here)
 #------Each node is stored a named list ------#
 #------nodes is a list of named list ---------#
 #=-----The process returns a list of named lists with the named key as label
-NYCMafiaNodes <- read.csv(here::here("data-raw", "Filtered_MafiaNodes.csv"))
-NYCMafiaEdges <- read.csv(here::here("data-raw", "Filtered_MafiaEdges.csv"))
+NYCMafiaNodes <- read.csv(here::here("data-raw", "NYCMafiaNodes.csv"))
+NYCMafiaEdges <- read.csv(here::here("data-raw", "NYCMafiaEdges.csv"))
 
 usethis::use_data(NYCMafiaNodes, overwrite = TRUE)
 usethis::use_data(NYCMafiaEdges, overwrite = TRUE)
