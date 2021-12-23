@@ -169,11 +169,12 @@ testEdgeInRange = function(nodes, edge, node, radius) {
   edgeTarget = edge[['Target']]
   if (is.null(nodes[[edgeSource]]) | is.null(nodes[[edgeTarget]])) {
     stop('Cannot find edge source or target in the node table. Please filter your edge table to contain edges that have corresponding nodes in the node table, or double check whether your node label column has the same values as edge source and target columns.')
-  }
-  if (euclidDistance(node, nodes[[edgeSource]]) < radius & euclidDistance(node, nodes[[edgeTarget]]) < radius) {
-    return (TRUE)
   } else {
-    return (FALSE)
+    if (euclidDistance(node, nodes[[edgeSource]]) < radius & euclidDistance(node, nodes[[edgeTarget]]) < radius) {
+      return (TRUE)
+    } else {
+      return (FALSE)
+    }
   }
 }
 
