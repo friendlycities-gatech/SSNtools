@@ -151,7 +151,7 @@ edgeScanManhattan = function(nodes, edges, distance) {
 # This is the ratio between the Actual Connections and the Potential Connections in a network.
 # 
 # Below are the three implementations of this, using radius, K-nearest, and Manhattan distance metrics.
-NDScanRadius = function(nodes, edges, radius) {
+NDScanRadius = function(nodes, edges, radius, min=3) {
   if(!inherits(nodes, "list") | !inherits(edges, "list")) {
     stop('nodes or edges need to be a list of lists. Please use processNode or processEdge to convert R dataframe to a list of lists')
   }
@@ -166,9 +166,9 @@ NDScanRadius = function(nodes, edges, radius) {
     potential = numNodesInRadius * (numNodesInRadius - 1)/2
     numEdges = getNumEdgesInRange(nodes, edges, runningNode, radius)
     
-    if (numNodesInRadius < 3) {
+    if (numNodesInRadius < min) {
       labels = c(labels, runningNode[['label']])
-      ndensity = c(ndensity, 0)
+      ndensity = c(ndensity, NA)
     } else {
       nDensity = numEdges / potential 
       labels = c(labels, runningNode[['label']])
