@@ -4,7 +4,7 @@
 \alias{NDScanManhattan}
 \title{FUNCTION_TITLE}
 \usage{
-NDScanManhattan(nodes, edges, distance)
+NDScanManhattan(nodes, edges, distance, min = 3)
 }
 \arguments{
 \item{nodes}{PARAM_DESCRIPTION}
@@ -12,6 +12,8 @@ NDScanManhattan(nodes, edges, distance)
 \item{edges}{PARAM_DESCRIPTION}
 
 \item{distance}{PARAM_DESCRIPTION}
+
+\item{min}{PARAM_DESCRIPTION}
 }
 \value{
 OUTPUT_DESCRIPTION

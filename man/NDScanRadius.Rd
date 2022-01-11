@@ -12,6 +12,8 @@ NDScanRadius(nodes, edges, radius, min = 3)
 \item{edges}{PARAM_DESCRIPTION}
 
 \item{radius}{PARAM_DESCRIPTION}
+
+\item{min}{PARAM_DESCRIPTION}
 }
 \value{
 OUTPUT_DESCRIPTION

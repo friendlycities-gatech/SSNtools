@@ -4,7 +4,7 @@
 \alias{edgeScanRadius}
 \title{EdgeScanRadius}
 \usage{
-edgeScanRadius(nodes, edges, maxRadius)
+edgeScanRadius(nodes, edges, maxRadius, min = 3)
 }
 \arguments{
 \item{nodes}{nodes of graph (a list of named lists)}
@@ -12,6 +12,8 @@ edgeScanRadius(nodes, edges, maxRadius)
 \item{edges}{edges of graph (a list of lists)}
 
 \item{maxRadius}{radius in the unit of coordinates of search window}
+
+\item{min}{minimum number of nodes in the distance window}
 }
 \value{
 a R dataframe that contains a column of node label, and a column of heat associated with the node

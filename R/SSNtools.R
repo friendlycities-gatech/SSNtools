@@ -64,7 +64,7 @@ edgeScanRadius = function(nodes, edges, maxRadius, min=3) {
   runningNode = nodes[[1]]
   while (length(visitedNodes) < length(nodes)) { 
     
-    numNodesInRadius = numberNodesWithinRadius(nodes, runningNode, radius)
+    numNodesInRadius = numberNodesWithinRadius(nodes, runningNode, maxRadius)
     
     if (numNodesInRadius < min) {
       labels = c(labels, runningNode[['label']])
@@ -140,7 +140,7 @@ edgeScanManhattan = function(nodes, edges, distance, min=3) {
   runningNode = nodes[[1]]
   while (length(visitedNodes) < length(nodes)) {
     
-    numNodesInRadius = numberNodesWithinRadius(nodes, runningNode, radius)
+    numNodesInRadius = numberNodesWithinRadius(nodes, runningNode, distance)
     if (numNodesInRadius < min) {
       labels = c(labels, runningNode[['label']])
       numedges = c(numedges, NA)
@@ -251,7 +251,7 @@ NDScanManhattan = function(nodes, edges, distance, min=3) {
   runningNode = nodes[[1]]
   
   while (length(visitedNodes) < length(nodes)) {
-    numNodesInRadius = numberNodesWithinRadius(nodes, runningNode, radius)
+    numNodesInRadius = numberNodesWithinRadius(nodes, runningNode, distance)
     if (numNodesInRadius < min) {
       labels = c(labels, runningNode[['label']])
       ndensity = c(ndensity, NA)

@@ -1,3 +1,5 @@
+/Users/xiaofanliang/Dropbox (GaTech)/GT_Research/Edge_Scan/GitHub/SSNtools/.Rbuildignore="398C9BD9"
+/Users/xiaofanliang/Dropbox (GaTech)/GT_Research/Edge_Scan/GitHub/SSNtools/.travis.yml="460618D5"
 /Users/xiaofanliang/Dropbox (GaTech)/GT_Research/Edge_Scan/GitHub/SSNtools/DESCRIPTION="A17335B9"
 /Users/xiaofanliang/Dropbox (GaTech)/GT_Research/Edge_Scan/GitHub/SSNtools/LICENSE.md="B7E6CBF6"
 /Users/xiaofanliang/Dropbox (GaTech)/GT_Research/Edge_Scan/GitHub/SSNtools/NAMESPACE="599D0A78"
@@ -6,4 +8,6 @@
 /Users/xiaofanliang/Dropbox (GaTech)/GT_Research/Edge_Scan/GitHub/SSNtools/README.Rmd="A59318D6"
 /Users/xiaofanliang/Dropbox (GaTech)/GT_Research/Edge_Scan/GitHub/SSNtools/README.md="AC1763DE"
 /Users/xiaofanliang/Dropbox (GaTech)/GT_Research/Edge_Scan/GitHub/SSNtools/data-raw/data.R="F964FF42"
+/Users/xiaofanliang/Dropbox (GaTech)/GT_Research/Edge_Scan/GitHub/SSNtools/man/NDScanManhattan.Rd="DE024489"
 /Users/xiaofanliang/Dropbox (GaTech)/GT_Research/Edge_Scan/GitHub/SSNtools/tests/testthat.R="D6D61013"
+/Users/xiaofanliang/Dropbox (GaTech)/GT_Research/Edge_Scan/GitHub/SSNtools/tests/testthat/test-SSNtools.R="B4EBEE47"

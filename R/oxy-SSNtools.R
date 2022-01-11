@@ -76,6 +76,7 @@ processEdge = function(data, source_name, target_name) {
 #' @param nodes nodes of graph (a list of named lists)
 #' @param edges edges of graph (a list of lists)
 #' @param maxRadius radius in the unit of coordinates of search window
+#' @param min minimum number of nodes in the distance window
 #' @return a R dataframe that contains a column of node label, and a column of heat associated with the node
 #' @details DETAILS
 #' @examples 
@@ -85,7 +86,7 @@ processEdge = function(data, source_name, target_name) {
 #' }
 #' @rdname edgeScanRadius
 #' @export 
-edgeScanRadius = function(nodes, edges, maxRadius) {
+edgeScanRadius = function(nodes, edges, maxRadius, min=3) {
   if(!inherits(nodes, "list") | !inherits(edges, "list")) {
     print('hi')
     stop('nodes or edges need to be a list of lists. Please use processNode or processEdge to convert R dataframe to a list of lists')
@@ -96,10 +97,15 @@ edgeScanRadius = function(nodes, edges, maxRadius) {
   
   runningNode = nodes[[1]]
   while (length(visitedNodes) < length(nodes)) { 
-    numEdges = getNumEdgesInRange(nodes, edges, runningNode, maxRadius)
-    
-    labels = c(labels, runningNode[['label']])
-    numedges = c(numedges, numEdges)
+    numNodesInRadius = numberNodesWithinRadius(nodes, runningNode, maxRadius)
+    if (numNodesInRadius < min) {
+      labels = c(labels, runningNode[['label']])
+      numedges = c(numedges, NA)
+    } else {
+      numEdges = getNumEdgesInRange(nodes, edges, runningNode, maxRadius)
+      labels = c(labels, runningNode[['label']])
+      numedges = c(numedges, numEdges)
+    }
     
     temp = list()
     temp[[runningNode[['label']]]] <- runningNode
@@ -168,6 +174,7 @@ edgeScanKNearest = function(nodes, edges, k) {
 #' @param nodes PARAM_DESCRIPTION
 #' @param edges PARAM_DESCRIPTION
 #' @param distance PARAM_DESCRIPTION
+#' @param min PARAM_DESCRIPTION
 #' @return OUTPUT_DESCRIPTION
 #' @details DETAILS
 #' @examples 
@@ -178,7 +185,7 @@ edgeScanKNearest = function(nodes, edges, k) {
 #' }
 #' @rdname edgeScanManhattan
 #' @export 
-edgeScanManhattan = function(nodes, edges, distance) {
+edgeScanManhattan = function(nodes, edges, distance, min=3) {
   if(!inherits(nodes, "list") | !inherits(edges, "list")) {
     print('hi')
     stop('nodes or edges need to be a list of lists. Please use processNode or processEdge to convert R dataframe to a list of lists')
@@ -188,9 +195,15 @@ edgeScanManhattan = function(nodes, edges, distance) {
   numedges = c()
   runningNode = nodes[[1]]
   while (length(visitedNodes) < length(nodes)) {
-    numEdges = numberEdgesWithinManhattanDistance(nodes, edges, runningNode, distance)
-    labels = c(labels, runningNode[['label']])
-    numedges = c(numedges, numEdges)
+    numNodesInRadius = numberNodesWithinRadius(nodes, runningNode, distance)
+    if (numNodesInRadius < min) {
+      labels = c(labels, runningNode[['label']])
+      numedges = c(numedges, NA)
+    } else {
+      numEdges = numberEdgesWithinManhattanDistance(nodes, edges, runningNode, distance)
+      labels = c(labels, runningNode[['label']])
+      numedges = c(numedges, numEdges)
+    }
     temp = list()
     temp[[runningNode[['label']]]] <- runningNode
     visitedNodes = append(visitedNodes, temp)
@@ -213,6 +226,7 @@ edgeScanManhattan = function(nodes, edges, distance) {
 #' @param nodes PARAM_DESCRIPTION
 #' @param edges PARAM_DESCRIPTION
 #' @param radius PARAM_DESCRIPTION
+#' @param min PARAM_DESCRIPTION
 #' @return OUTPUT_DESCRIPTION
 #' @details DETAILS
 #' @examples 
@@ -318,6 +332,7 @@ NDScanKNearest = function(nodes, edges, k) {
 #' @param nodes PARAM_DESCRIPTION
 #' @param edges PARAM_DESCRIPTION
 #' @param distance PARAM_DESCRIPTION
+#' @param min PARAM_DESCRIPTION
 #' @return OUTPUT_DESCRIPTION
 #' @details DETAILS
 #' @examples 
@@ -328,7 +343,7 @@ NDScanKNearest = function(nodes, edges, k) {
 #' }
 #' @rdname NDScanManhattan
 #' @export 
-NDScanManhattan = function(nodes, edges, distance) {
+NDScanManhattan = function(nodes, edges, distance, min=3) {
   if(!inherits(nodes, "list") | !inherits(edges, "list")) {
     print('hi')
     stop('nodes or edges need to be a list of lists. Please use processNode or processEdge to convert R dataframe to a list of lists')
@@ -339,20 +354,26 @@ NDScanManhattan = function(nodes, edges, distance) {
   runningNode = nodes[[1]]
   
   while (length(visitedNodes) < length(nodes)) {
-    numNodesInManhattanDistance = numberNodesWithinManhattanDistance(nodes, runningNode, distance)
-    edgesInManhattanDistance = getEdgesInManhattanDistance(nodes, edges, runningNode, distance)
-    #nodesInManhattanDistance = getNodesInManhattanDistance(nodes, runningNode, distance)
-    
-    potentialEdges = numNodesInManhattanDistance * (numNodesInManhattanDistance - 1) / 2
-    numEdges = numberEdgesWithinManhattanDistance(nodes, edges, runningNode, distance)
-    
-    if (numNodesInManhattanDistance < 3) {
+    numNodesInRadius = numberNodesWithinRadius(nodes, runningNode, distance)
+    if (numNodesInRadius < min) {
       labels = c(labels, runningNode[['label']])
-      ndensity = c(ndensity, 0)
+      ndensity = c(ndensity, NA)
     } else {
-      nDensity = numEdges/potentialEdges
-      labels = c(labels, runningNode[['label']])
-      ndensity = c(ndensity, nDensity)
+      numNodesInManhattanDistance = numberNodesWithinManhattanDistance(nodes, runningNode, distance)
+      edgesInManhattanDistance = getEdgesInManhattanDistance(nodes, edges, runningNode, distance)
+      #nodesInManhattanDistance = getNodesInManhattanDistance(nodes, runningNode, distance)
+      
+      potentialEdges = numNodesInManhattanDistance * (numNodesInManhattanDistance - 1) / 2
+      numEdges = numberEdgesWithinManhattanDistance(nodes, edges, runningNode, distance)
+      
+      if (numNodesInManhattanDistance < 3) {
+        labels = c(labels, runningNode[['label']])
+        ndensity = c(ndensity, 0)
+      } else {
+        nDensity = numEdges/potentialEdges
+        labels = c(labels, runningNode[['label']])
+        ndensity = c(ndensity, nDensity)
+      }
     }
     temp = list()
     temp[[runningNode[['label']]]] <- runningNode
