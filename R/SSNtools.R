@@ -52,7 +52,7 @@ processEdge = function(data, source_name, target_name) {
 #     edges - edges of graph
 #     maxRadius - radius in km of search window
 
-edgeScanRadius = function(nodes, edges, maxRadius) {
+edgeScanRadius = function(nodes, edges, maxRadius, min=3) {
   if(!inherits(nodes, "list") | !inherits(edges, "list")) {
     stop('nodes or edges need to be a list of lists. Please use processNode or processEdge to convert R dataframe to a list of lists')
   }
@@ -63,11 +63,17 @@ edgeScanRadius = function(nodes, edges, maxRadius) {
   
   runningNode = nodes[[1]]
   while (length(visitedNodes) < length(nodes)) { 
-    numEdges = getNumEdgesInRange(nodes, edges, runningNode, maxRadius)
     
-    labels = c(labels, runningNode[['label']])
-    numedges = c(numedges, numEdges)
+    numNodesInRadius = numberNodesWithinRadius(nodes, runningNode, radius)
     
+    if (numNodesInRadius < min) {
+      labels = c(labels, runningNode[['label']])
+      numedges = c(numedges, NA)
+    } else {
+      numEdges = getNumEdgesInRange(nodes, edges, runningNode, maxRadius)
+      labels = c(labels, runningNode[['label']])
+      numedges = c(numedges, numEdges)
+    }
     temp = list()
     temp[[runningNode[['label']]]] <- runningNode
     visitedNodes = append(visitedNodes, temp)
@@ -96,6 +102,7 @@ edgeScanKNearest = function(nodes, edges, k) {
   
   runningNode = nodes[[1]]
   while (length(visitedNodes) < length(nodes)) {
+    
     kNearest = nearestNeighbors(nodes, runningNode, k)
     rad = 0 
     for (node in kNearest) {
@@ -107,6 +114,7 @@ edgeScanKNearest = function(nodes, edges, k) {
     
     labels = c(labels, runningNode[['label']])
     numedges = c(numedges, numEdges)
+  
     
     temp = list()
     temp[[runningNode[['label']]]] <- runningNode
@@ -122,7 +130,7 @@ edgeScanKNearest = function(nodes, edges, k) {
 #     nodes - nodes of graph
 #     edges - edges of graph
 #     distance - manhattan distance in km of search window
-edgeScanManhattan = function(nodes, edges, distance) {
+edgeScanManhattan = function(nodes, edges, distance, min=3) {
   if(!inherits(nodes, "list") | !inherits(edges, "list")) {
     stop('nodes or edges need to be a list of lists. Please use processNode or processEdge to convert R dataframe to a list of lists')
   }
@@ -131,9 +139,16 @@ edgeScanManhattan = function(nodes, edges, distance) {
   numedges = c()
   runningNode = nodes[[1]]
   while (length(visitedNodes) < length(nodes)) {
-    numEdges = numberEdgesWithinManhattanDistance(nodes, edges, runningNode, distance)
-    labels = c(labels, runningNode[['label']])
-    numedges = c(numedges, numEdges)
+    
+    numNodesInRadius = numberNodesWithinRadius(nodes, runningNode, radius)
+    if (numNodesInRadius < min) {
+      labels = c(labels, runningNode[['label']])
+      numedges = c(numedges, NA)
+    } else {
+      numEdges = numberEdgesWithinManhattanDistance(nodes, edges, runningNode, distance)
+      labels = c(labels, runningNode[['label']])
+      numedges = c(numedges, numEdges)
+    }
     temp = list()
     temp[[runningNode[['label']]]] <- runningNode
     visitedNodes = append(visitedNodes, temp)
@@ -163,13 +178,13 @@ NDScanRadius = function(nodes, edges, radius, min=3) {
   while (length(visitedNodes) < length(nodes)) {
     #print(length(visitedNodes)/length(nodes))
     numNodesInRadius = numberNodesWithinRadius(nodes, runningNode, radius)
-    potential = numNodesInRadius * (numNodesInRadius - 1)/2
-    numEdges = getNumEdgesInRange(nodes, edges, runningNode, radius)
     
     if (numNodesInRadius < min) {
       labels = c(labels, runningNode[['label']])
       ndensity = c(ndensity, NA)
     } else {
+      potential = numNodesInRadius * (numNodesInRadius - 1)/2
+      numEdges = getNumEdgesInRange(nodes, edges, runningNode, radius)
       nDensity = numEdges / potential 
       labels = c(labels, runningNode[['label']])
       ndensity = c(ndensity, nDensity)
@@ -202,6 +217,7 @@ NDScanKNearest = function(nodes, edges, k) {
   runningNode = nodes[[1]]
   
   while (length(visitedNodes) < length(nodes)) {
+    
     kNearest = nearestNeighbors(nodes, runningNode, k)
     rad = 0
     for (node in kNearest) {
@@ -225,7 +241,7 @@ NDScanKNearest = function(nodes, edges, k) {
   return(heat)
 }
 
-NDScanManhattan = function(nodes, edges, distance) {
+NDScanManhattan = function(nodes, edges, distance, min=3) {
   if(!inherits(nodes, "list") | !inherits(edges, "list")) {
     stop('nodes or edges need to be a list of lists. Please use processNode or processEdge to convert R dataframe to a list of lists')
   }
@@ -235,20 +251,26 @@ NDScanManhattan = function(nodes, edges, distance) {
   runningNode = nodes[[1]]
   
   while (length(visitedNodes) < length(nodes)) {
-    numNodesInManhattanDistance = numberNodesWithinManhattanDistance(nodes, runningNode, distance)
-    edgesInManhattanDistance = getEdgesInManhattanDistance(nodes, edges, runningNode, distance)
-    #nodesInManhattanDistance = getNodesInManhattanDistance(nodes, runningNode, distance)
-    
-    potentialEdges = numNodesInManhattanDistance * (numNodesInManhattanDistance - 1) / 2
-    numEdges = numberEdgesWithinManhattanDistance(nodes, edges, runningNode, distance)
-    
-    if (numNodesInManhattanDistance < 3) {
+    numNodesInRadius = numberNodesWithinRadius(nodes, runningNode, radius)
+    if (numNodesInRadius < min) {
       labels = c(labels, runningNode[['label']])
-      ndensity = c(ndensity, 0)
+      ndensity = c(ndensity, NA)
     } else {
-      nDensity = numEdges/potentialEdges
-      labels = c(labels, runningNode[['label']])
-      ndensity = c(ndensity, nDensity)
+      numNodesInManhattanDistance = numberNodesWithinManhattanDistance(nodes, runningNode, distance)
+      edgesInManhattanDistance = getEdgesInManhattanDistance(nodes, edges, runningNode, distance)
+      #nodesInManhattanDistance = getNodesInManhattanDistance(nodes, runningNode, distance)
+      
+      potentialEdges = numNodesInManhattanDistance * (numNodesInManhattanDistance - 1) / 2
+      numEdges = numberEdgesWithinManhattanDistance(nodes, edges, runningNode, distance)
+      
+      if (numNodesInManhattanDistance < 3) {
+        labels = c(labels, runningNode[['label']])
+        ndensity = c(ndensity, 0)
+      } else {
+        nDensity = numEdges/potentialEdges
+        labels = c(labels, runningNode[['label']])
+        ndensity = c(ndensity, nDensity)
+      }
     }
     temp = list()
     temp[[runningNode[['label']]]] <- runningNode

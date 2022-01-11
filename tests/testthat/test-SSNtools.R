@@ -29,7 +29,7 @@ test_that("the number rows in edgeScanRadius outout is the same as the length of
 })
 
 test_that("the total heat in edgeScanRadius outout is the same as 366", {
-  expect_equal(sum(result$heat), 366)
+  expect_equal(sum(result$heat, na.rm = T), 366)
 })
 
 test_that("the number rows in NDScanRadius outout is the same as the length of nodes", {
@@ -37,7 +37,7 @@ test_that("the number rows in NDScanRadius outout is the same as the length of n
 })
 
 test_that("the number rows in NDScanRadius outout is the same as 14", {
-  expect_equal(round(sum(result2$heat), 0), 14)
+  expect_equal(round(sum(result2$heat, na.rm = T), 0), 14)
 })
 
 test_that("the number rows in NDScanKNearest outout is the same as the length of nodes", {

@@ -4,7 +4,7 @@
 \alias{NDScanRadius}
 \title{FUNCTION_TITLE}
 \usage{
-NDScanRadius(nodes, edges, radius)
+NDScanRadius(nodes, edges, radius, min = 3)
 }
 \arguments{
 \item{nodes}{PARAM_DESCRIPTION}
