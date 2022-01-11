@@ -40,7 +40,8 @@ edges = processEdge(NYCMafiaEdges, 'Source', 'Target')
 #     nodes - a list of named lists. Each sublist contains a node.
 #     edges - a list of list. Each sublist contains an edge.
 #     maxRadius - radius (in the coordinate unit) of search window. 
-result = NDScanRadius(nodes, edges, 500)
+#     (optional) min - minimum number of points required to be in the search window. Default to 3.
+result = NDScanRadius(nodes, edges, 500, 5)
 ```
 
 #### Other Available Functions 
