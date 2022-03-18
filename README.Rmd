@@ -77,7 +77,7 @@ heat = edgeScanManhattan(nodes, edges, 500)[[1]]
 
 #### Application to a Weighted and Bipartite Graph
 
-We have a built-in dataset for POI visits to test the application in a weighted and bipartite graph. The data from the dataset is processed from SafeGraph with extra filters and coding to hide sensitive information. The dataset is meant to be educational and thus can be inaccurate for real implications. The nodes in the dataset are restaurants in Atlanta (set 1) and centroids of census block group (set 2). The edges in the dataset are visits from the census block group to restaurants. The weight of the edges represent the percentage of total visits coming from a particular census block group. In total there are **1356 nodes and 7926 edges**. The coordinates system is transformed with crs=26967. 
+We have a built-in dataset for POI visits to test the application in a weighted and bipartite graph. The data from the dataset is processed from SafeGraph with extra filters and coding to hide sensitive information. The dataset is meant to be educational and thus can be inaccurate for real implications. The nodes in the dataset are restaurants in Atlanta (set 1) and centroids of census block group (set 2). The edges in the dataset are visits from the census block group to restaurants. The weight of the edges represent the percentage of total visits coming from a particular census block group. You can call **POINodes (n=1356) and POIEdges (n=7926)** to directly access the sample dataset. The coordinates system is transformed with crs=26967. 
 
 Based on the definitions of EdgeScan and NDScan, **directed** argument is only implemented for ND-functions, while **weighted** argument is only implemented for the Edge-functions. 
 
