@@ -3,23 +3,36 @@
 #------------------------------------------#
 
 #Get number of nodes within manhattan distance of source node
-numberNodesWithinManhattanDistance = function(nodes, source, distance) {
+numberNodesWithinManhattanDistance = function(nodes, source, distance, bipartite) {
   retValue = 0
   for (node in nodes) {
     dist = ManhattanDistance(source, node)
-    if (dist < distance) {retValue = retValue + 1}
+    if(bipartite) {
+      if(node[['bipartite']] == 0) {
+        if (dist < distance) {retValue = retValue + 1} 
+      }
+    } else {
+      if (dist < distance) {retValue = retValue + 1}
+    }
   }
   return (retValue)
 }
 
 #Get number of edges within manhattan distance of source node
-numberEdgesWithinManhattanDistance = function(nodes, edges, source, distance) {
+numberEdgesWithinManhattanDistance = function(nodes, edges, source, distance, weighted) {
   retValue = 0
   for (edge in edges) {
     dist1 = ManhattanDistance(source, nodes[[edge[['Source']]]])
     dist2 = ManhattanDistance(source, nodes[[edge[['Target']]]])
     if (dist1 < distance & dist2 < distance) {
-      retValue = retValue + 1
+      if(weighted) {
+        if(is.null(edge[['Weight']])) {
+          stop('Edge weight is not available. Please check if edge table contains a weight column and if the name of the weight column is provided in the processEdge function')
+        }
+        retValue = retValue + edge[['Weight']]
+      } else {
+        retValue = retValue + 1
+      }
     }
   }
   return(retValue)
@@ -87,50 +100,66 @@ calculateMidpoint = function(edge, nodes) {
   return(x,y)
 }
 
+#for KNN only
 #Get a certain number of the nearest neighbor hodes to a source node (can suggest increasing the number if numNeighbors > number)
-nearestNeighbors = function(nodes, source, number) {
+nearestNeighbors = function(nodes, source, number, bipartite) {
   neighbors = list() #a particular structure to store tibble nodes #dict does not accept tibble as the key
   distance_dict = {}
   numNeighbors = 0
   
   for (node in nodes) {
-    label = node[['label']]
-    if (node[['label']] != source[['label']]) {
-      distance = euclidDistance(source, node)
-      if (numNeighbors < number) {
-        temp = list()
-        temp[[label]] <- node
-        neighbors = append(neighbors, temp)
-        distance_dict[label] = distance
-        numNeighbors = numNeighbors + 1
-      } else {
-        for (neighbor in neighbors) {
-          neigh_label = neighbor[['label']]
-          if (distance < distance_dict[neigh_label]) {
-            neighbors = neighbors[names(neighbors) != neigh_label]
-            temp = list()
-            temp[[label]] <- node
-            neighbors = append(neighbors, temp)
-            distance_dict[label] = distance
-            break 
+    if(is.null(node[['bipartite']])) {z = 100} else {z = node[['bipartite']]}
+    if((bipartite & z == 0) | !bipartite)  {
+      label = node[['label']]
+      if (node[['label']] != source[['label']]) {
+        distance = euclidDistance(source, node)
+        if (numNeighbors < number) {
+          temp = list()
+          temp[[label]] <- node
+          neighbors = append(neighbors, temp)
+          distance_dict[label] = distance
+          numNeighbors = numNeighbors + 1
+        } else {
+          for (neighbor in neighbors) {
+            neigh_label = neighbor[['label']]
+            if (distance < distance_dict[neigh_label]) {
+              neighbors = neighbors[names(neighbors) != neigh_label]
+              temp = list()
+              temp[[label]] <- node
+              neighbors = append(neighbors, temp)
+              distance_dict[label] = distance
+              break 
+            }
           }
         }
       }
-    } 
+    }
   }
   return(neighbors) #a list of named lists
 }
 
 #Get the nearest neighbor to a source node that is not in the visited list
-nearestUnvisitedNeighbor = function(nodes, visited, source) {
+nearestUnvisitedNeighbor = function(nodes, visited, source, bipartite) {
   minNode = NULL
   minDistance = -1
-  for (node in nodes) {
-    if (node[['label']] != source[['label']] & (!node[['label']] %in% names(visited))) {
-      distance = euclidDistance(source, node)
-      if (minDistance == -1 | distance < minDistance) {
-        minDistance = distance
-        minNode = node
+  if(bipartite) {
+    for (node in nodes) {
+      if (node[['label']] != source[['label']] & (!node[['label']] %in% names(visited)) & node[['bipartite']] == 1) {
+        distance = euclidDistance(source, node)
+        if (minDistance == -1 | distance < minDistance) {
+          minDistance = distance
+          minNode = node
+        }
+      }
+    }
+  } else {
+    for (node in nodes) {
+      if (node[['label']] != source[['label']] & (!node[['label']] %in% names(visited))) {
+        distance = euclidDistance(source, node)
+        if (minDistance == -1 | distance < minDistance) {
+          minDistance = distance
+          minNode = node
+        }
       }
     }
   }
@@ -152,12 +181,17 @@ nodesWithinRadius = function(nodes, source, radius) {
   return(retNodes)
 }
 
-numberNodesWithinRadius = function(nodes, source, radius) {
+numberNodesWithinRadius = function(nodes, source, radius, bipartite) {
   numNodes = 0
   for (node in nodes) {
     distance = euclidDistance(source, node)
-    if (distance < radius) {
-      numNodes = numNodes + 1
+    #it only counts target nodes if bipartite = TRUE
+    if(bipartite) {
+      if(node[['bipartite']] == 0) {
+        if (distance < radius) {numNodes = numNodes + 1} 
+      }
+    } else {
+      if (distance < radius) {numNodes = numNodes + 1} 
     }
   }
   return (numNodes)
@@ -179,11 +213,17 @@ testEdgeInRange = function(nodes, edge, node, radius) {
 }
 
 #Gets the number of edges within a radius of a given node
-getNumEdgesInRange = function(nodes, edges, node, radius) {
+getNumEdgesInRange = function(nodes, edges, node, radius, weighted) {
   retVal = 0 
   for (edge in edges) {
     if (testEdgeInRange(nodes, edge, node, radius)) {
-      retVal = retVal + 1
+      if(weighted) {
+        if(is.null(edge[['Weight']])) {
+          stop('Edge weight is not available. Please check if edge table contains a weight column and if the name of the weight column is provided in the processEdge function')
+        } else {retVal = retVal + edge[['Weight']]}
+      } else {
+        retVal = retVal + 1
+      }
     }
   }
   return (retVal)

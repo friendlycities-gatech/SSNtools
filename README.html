@@ -35,47 +35,15 @@ body {
 <div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># install.packages(&quot;devtools&quot;)</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>devtools<span class="sc">::</span><span class="fu">install_github</span>(<span class="st">&quot;friendlycities-gatech/SSNtools&quot;</span>)</span></code></pre></div>
 <h4 id="example">Example</h4>
-<p>This is a basic example which shows you how to use the main functions of SSN hotspot detections in SSNtools. The package comes with an example dataset, which is a spatial social network of Mafia members in New York City in the 1960s. See <a href="https://drive.google.com/file/d/1guVURnryYUyXaJ3A7SoMFMpkv7CUx6He/view">To racketeer among neighbors: spatial features of criminal collaboration in the American Mafia</a> for more details about the dataset. You can call <strong>NYCMafiaNodes</strong> (n=298) and <strong>NYCMafiaEdges</strong>(n=946) to directly access the sample dataset. The coordinate unit of the sample dataset is <strong>meter</strong>.</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(SSNtools)</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="co"># ----process dataframe into a list of lists </span></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="co"># params:</span></span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="co">#     nodes - a R dataframe containing node label, longitude, and latitude</span></span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="co">#     label_name - the name of the column for node label</span></span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="co">#     lon_name - the name of the column for node longitude </span></span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="co">#     lat_name - the name of the column for node latitude</span></span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>nodes <span class="ot">=</span> <span class="fu">processNode</span>(NYCMafiaNodes, <span class="st">&#39;label&#39;</span>, <span class="st">&#39;LonX&#39;</span>, <span class="st">&#39;LatY&#39;</span>)</span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="co"># params:</span></span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="co">#     edges - a R dataframe containing source node label and target node label</span></span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="co">#     source_name - the name of the column for source node label</span></span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="co">#     target_name - the name of the column for target node label</span></span>
-<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>edges <span class="ot">=</span> <span class="fu">processEdge</span>(NYCMafiaEdges, <span class="st">&#39;Source&#39;</span>, <span class="st">&#39;Target&#39;</span>)</span>
-<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="co">#-----calculates network density within a radius (500 meters - Euclidean distance) of each node in a network</span></span>
-<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a><span class="co"># params:</span></span>
-<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a><span class="co">#     nodes - a list of named lists. Each sublist contains a node.</span></span>
-<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a><span class="co">#     edges - a list of list. Each sublist contains an edge.</span></span>
-<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a><span class="co">#     maxRadius - radius (in the coordinate unit) of search window. </span></span>
-<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a><span class="co">#     (optional) min - minimum number of points required to be in the search window. Default to 3.</span></span>
-<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>result <span class="ot">=</span> <span class="fu">NDScanRadius</span>(nodes, edges, <span class="dv">500</span>, <span class="dv">5</span>)</span></code></pre></div>
+<p>This is a basic example which shows you how to use the main functions of SSN hotspot detections in SSNtools. The package comes with an example dataset, which is a spatial social network of Mafia members in New York City in the 1960s. See <a href="https://drive.google.com/file/d/1guVURnryYUyXaJ3A7SoMFMpkv7CUx6He/view">To racketeer among neighbors: spatial features of criminal collaboration in the American Mafia</a> for more details about the dataset. You can call <strong>NYCMafiaNodes</strong> (n=298) and <strong>NYCMafiaEdges</strong>(n=946) to directly access the sample dataset. The coordinate unit of the sample dataset is <strong>meter</strong> (crs=32118). The function currently only applies to <strong>undirected</strong> graph.</p>
+<p>All the main functions (e.g, edgeScanRadius and NDScanRadius) will return a list of two dataframes. The first dataframe is a node table that has the node label and the <strong>heat</strong>, presenting the number of edges in EdgeScan and network density in NDScan respectively. The second dataframe is an edge table that has the edge pair and a binary column <strong>edgeWithin</strong> indicating whether the edge is within the scanning window.</p>
 <h4 id="other-available-functions">Other Available Functions</h4>
 <p>Currently available functions in SSNtools for SSN hotspot detection:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(SSNtools)</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="co">#-----calculates network density within 10 nearest neighbors of each node in a network</span></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>result <span class="ot">=</span> <span class="fu">NDScanKNearest</span>(nodes, edges, <span class="dv">10</span>)</span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="co">#-----calculates network density within a radius (500 meters - Manhattan distance) of each node in a network</span></span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>result <span class="ot">=</span> <span class="fu">NDScanManhattan</span>(nodes, edges, <span class="dv">500</span>)</span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="co">#----calculate the density of edges within a radius (500 meters - Euclidean distance) of every node in a graph</span></span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>result <span class="ot">=</span> <span class="fu">edgeScanRadius</span>(nodes, edges, <span class="dv">500</span>)</span>
-<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a><span class="co">#-----calculates the density of edges within 10 nearest neighbors of each node in a network</span></span>
-<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>result <span class="ot">=</span> <span class="fu">edgeScanKNearest</span>(nodes, edges, <span class="dv">10</span>)</span>
-<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a><span class="co">#-----calculates the density of edges within a radius (500 meters - Manhattan distance) of each node in a network</span></span>
-<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>result <span class="ot">=</span> <span class="fu">edgeScanManhattan</span>(nodes, edges, <span class="dv">500</span>)</span></code></pre></div>
+<h4 id="application-to-a-weighted-and-bipartite-graph">Application to a Weighted and Bipartite Graph</h4>
+<p>We have a built-in dataset for POI visits to test the application in a weighted and bipartite graph. The data from the dataset is processed from SafeGraph with extra filters and coding to hide sensitive information. The dataset is meant to be educational and thus can be inaccurate for real implications. The nodes in the dataset are restaurants in Atlanta (set 1) and centroids of census block group (set 2). The edges in the dataset are visits from the census block group to restaurants. The weight of the edges represent the percentage of total visits coming from a particular census block group. In total there are <strong>1356 nodes and 7926 edges</strong>. The coordinates system is transformed with crs=26967.</p>
+<p>Based on the definitions of EdgeScan and NDScan, <strong>directed</strong> argument is only implemented for ND-functions, while <strong>weighted</strong> argument is only implemented for the Edge-functions.</p>
 <h4 id="future-updates">Future Updates</h4>
-<p>This package is developed under NSF Career Grant: A Research and Educational Framework for Incorporating Spatial Heterogeneity into Social Network Analysis. More spatial social network metrics will be incorporated in the package in the near future.</p>
+<p>This package is being developed under the NSF Career Grant: A Research and Educational Framework for Incorporating Spatial Heterogeneity into Social Network Analysis. More spatial social network metrics will be incorporated in the package in the near future.</p>
 
 </body>
 </html>

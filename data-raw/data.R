@@ -24,3 +24,5 @@
 "NYCMafiaEdges"
 "MafiaNodes"
 "MafiaEdges"
+"DTMafiaNodes"
+"DTMafiaEdges"
