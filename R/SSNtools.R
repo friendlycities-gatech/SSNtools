@@ -297,8 +297,6 @@ NDScanRadius = function(nodes, edges, radius, min=3, directed=FALSE, bipartite=F
     stop = length(nodes)
   }
   
-  if(directed) {dir = 2} else {dir = 1}
-  
   for (i in seq(1, stop)) {
     numNodesInRadius = numberNodesWithinRadius(nodes, nodes[[i]], radius, bipartite)
     if (numNodesInRadius < min) {
@@ -306,8 +304,10 @@ NDScanRadius = function(nodes, edges, radius, min=3, directed=FALSE, bipartite=F
       ndensity = c(ndensity, NA)
     } else {
       if(bipartite) {
+        if(directed) {dir = 2} else {dir = 1}
         potential = numNodesInRadius * (numberNodesWithinRadius(nodes, nodes[[i]], radius, FALSE) - numNodesInRadius) * dir
       } else {
+        if(directed) {dir = 1} else {dir = 2}
         potential = numNodesInRadius * (numNodesInRadius - 1)/dir
       }
       numEdges = getNumEdgesInRange(nodes, edges, nodes[[i]], radius, FALSE) #weighted = FALSE for network density
@@ -360,7 +360,6 @@ NDScanKNearest = function(nodes, edges, k, directed=FALSE, bipartite=FALSE) {
     stop = length(nodes)
   }
   
-  if(directed) {dir = 2} else {dir = 1}
   for (i in seq(1, stop)) {
     kNearest = nearestNeighbors(nodes, nodes[[i]], k, bipartite)
     rad = 0
@@ -371,8 +370,10 @@ NDScanKNearest = function(nodes, edges, k, directed=FALSE, bipartite=FALSE) {
     }
     numNodesInRadius = numberNodesWithinRadius(nodes, nodes[[i]], rad, bipartite)
     if(bipartite) {
+      if(directed) {dir = 2} else {dir = 1}
       potential = numNodesInRadius * (numberNodesWithinRadius(nodes, nodes[[i]], rad, FALSE) - numNodesInRadius) * dir
     } else {
+      if(directed) {dir = 1} else {dir = 2}
       potential = numNodesInRadius * (numNodesInRadius - 1)/dir
     }
     numEdges = getNumEdgesInRange(nodes, edges, nodes[[i]], rad, FALSE) #weighted = FALSE for network density
@@ -432,7 +433,6 @@ NDScanManhattan = function(nodes, edges, radius, min=3, directed=FALSE, bipartit
     stop = length(nodes)
   }
   
-  if(directed) {dir = 2} else {dir = 1}
   for (i in seq(1, stop)) {
     numNodesInManhattanDistance = numberNodesWithinManhattanDistance(nodes, nodes[[i]], radius, bipartite)
     if (numNodesInManhattanDistance < min) {
@@ -440,8 +440,10 @@ NDScanManhattan = function(nodes, edges, radius, min=3, directed=FALSE, bipartit
       ndensity = c(ndensity, NA)
     } else {
       if(bipartite) {
+        if(directed) {dir = 2} else {dir = 1}
         potential = numNodesInManhattanDistance * (numberNodesWithinManhattanDistance(nodes, nodes[[i]], radius, FALSE) - numNodesInManhattanDistance) * dir
       } else {
+        if(directed) {dir = 1} else {dir = 2}
         potential = numNodesInManhattanDistance * (numNodesInManhattanDistance - 1)/dir
       }
       numEdges = numberEdgesWithinManhattanDistance(nodes, edges, nodes[[i]], radius, FALSE)
