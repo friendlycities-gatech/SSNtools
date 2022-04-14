@@ -9,10 +9,10 @@ numberNodesWithinManhattanDistance = function(nodes, source, distance, bipartite
     dist = ManhattanDistance(source, node)
     if(bipartite) {
       if(node[['bipartite']] == 0) {
-        if (dist < distance) {retValue = retValue + 1} 
+        if (dist <= distance) {retValue = retValue + 1} 
       }
     } else {
-      if (dist < distance) {retValue = retValue + 1}
+      if (dist <= distance) {retValue = retValue + 1}
     }
   }
   return (retValue)
@@ -24,7 +24,7 @@ numberEdgesWithinManhattanDistance = function(nodes, edges, source, distance, we
   for (edge in edges) {
     dist1 = ManhattanDistance(source, nodes[[edge[['Source']]]])
     dist2 = ManhattanDistance(source, nodes[[edge[['Target']]]])
-    if (dist1 < distance & dist2 < distance) {
+    if (dist1 <= distance & dist2 <= distance) {
       if(weighted) {
         if(is.null(edge[['Weight']])) {
           stop('Edge weight is not available. Please check if edge table contains a weight column and if the name of the weight column is provided in the processEdge function')
@@ -43,7 +43,7 @@ getNodesInManhattanDistance = function (nodes, source, distance) {
   retNodes = c()
   for (node in nodes) {
     dist = ManhattanDistance(source, node)
-    if (dist < distance) {
+    if (dist <= distance) {
       retNodes = append(retNodes, node)
     }
   }
@@ -171,7 +171,7 @@ nodesWithinRadius = function(nodes, source, radius) {
   retNodes = list()
   for (node in nodes) {
     distance = euclidDistance(source, node)
-    if (distance < radius) {
+    if (distance <= radius) {
       label = node[['label']]
       temp = list()
       temp[[label]] <- node
@@ -188,10 +188,10 @@ numberNodesWithinRadius = function(nodes, source, radius, bipartite) {
     #it only counts target nodes if bipartite = TRUE
     if(bipartite) {
       if(node[['bipartite']] == 0) {
-        if (distance < radius) {numNodes = numNodes + 1} 
+        if (distance <= radius) {numNodes = numNodes + 1} 
       }
     } else {
-      if (distance < radius) {numNodes = numNodes + 1} 
+      if (distance <= radius) {numNodes = numNodes + 1} 
     }
   }
   return (numNodes)
@@ -204,7 +204,7 @@ testEdgeInRange = function(nodes, edge, node, radius) {
   if (is.null(nodes[[edgeSource]]) | is.null(nodes[[edgeTarget]])) {
     stop('Cannot find edge source or target in the node table. Please filter your edge table to contain edges that have corresponding nodes in the node table, or double check whether your node label column has the same values as edge source and target columns.')
   } else {
-    if (euclidDistance(node, nodes[[edgeSource]]) < radius & euclidDistance(node, nodes[[edgeTarget]]) < radius) {
+    if (euclidDistance(node, nodes[[edgeSource]]) <= radius & euclidDistance(node, nodes[[edgeTarget]]) <= radius) {
       return (TRUE)
     } else {
       return (FALSE)

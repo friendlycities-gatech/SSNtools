@@ -58,7 +58,7 @@ test_that("the number rows in NDScanRadius outout is the same as the length of n
   expect_equal(length(nodes),nrow(result2))
 })
 
-test_that("the number rows in NDScanRadius output is the same as 7", {
+test_that("the number rows in NDScanRadius output is the same as 14", {
   expect_equal(round(sum(result2$heat, na.rm = T), 0), 14) 
 })
 
