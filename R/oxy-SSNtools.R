@@ -398,7 +398,7 @@ edgeScanMatrix = function(nodes, edges, thres, matrix, min=3, weighted=FALSE, bi
     } else {
       NodesInMatrix = NodesWithinMatrixThres(nodes[[i]][['label']], thres, matrix)
     }
-    numNodesInMatrix = length(NodesInMatrix)
+    numNodesInMatrix = length(NodesInMatrix)+1
     if (numNodesInMatrix < min) {
       labels = c(labels, nodes[[i]][['label']])
       numedges = c(numedges, NA)
@@ -745,7 +745,7 @@ NDScanMatrix = function(nodes, edges, thres, matrix, min=3, directed=FALSE, bipa
     } else {
       NodesInMatrix = NodesWithinMatrixThres(nodes[[i]][['label']], thres, matrix)
     }
-    numNodesInMatrix = length(NodesInMatrix)
+    numNodesInMatrix = length(NodesInMatrix)+1
     if (numNodesInMatrix < min) {
       labels = c(labels, nodes[[i]][['label']])
       ndensity = c(ndensity, NA)
