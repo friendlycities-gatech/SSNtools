@@ -39,12 +39,23 @@ test_that("POIEdges loaded successfully", {
 nodes <- processNode(NYCMafiaNodes, 'label', 'LonX', 'LatY')
 edges <- processEdge(NYCMafiaEdges, 'Source', 'Target')
 
-result <- edgeScanRadius(nodes, edges, 500)[[1]]
-result2 <- NDScanRadius(nodes, edges, 500)[[1]]
-result3 <- NDScanKNearest(nodes, edges, 10)[[1]]
+result = edgeScanRadius(nodes, edges, 500)[[1]]
+result2 = NDScanRadius(nodes, edges, 500)[[1]]
+result3 = NDScanKNearest(nodes, edges, 10)[[1]]
 result4 = NDScanManhattan(nodes, edges, 500)[[1]]
 result5 = edgeScanKNearest(nodes, edges, 10)[[1]]
 result6 = edgeScanManhattan(nodes, edges, 500)[[1]]
+
+#create a fake matrix for non-bipartite network
+n = 298
+m = matrix(sample.int(10, n*n, replace=TRUE), ncol=n)
+colnames(m) = NYCMafiaNodes$label[1:n]
+rownames(m) = NYCMafiaNodes$label[1:n]
+diag(m) <- NA
+m[lower.tri(m)] = t(m)[lower.tri(m)]
+
+result7 = edgeScanMatrix(nodes, edges, 5, m)[[1]]
+result8 = NDScanMatrix(nodes, edges, 5, m)[[1]]
 
 test_that("the number rows in edgeScanRadius outout is the same as the length of nodes", {
   expect_equal(length(nodes),nrow(result))
@@ -70,6 +81,10 @@ test_that("the number rows in NDScanManhattan outout is the same as the length o
   expect_equal(length(nodes),nrow(result4))
 })
 
+test_that("the number rows in NDScanMatrix outout is the same as the length of nodes", {
+  expect_equal(length(nodes),nrow(result8))
+})
+
 test_that("the number rows in edgeScanKNearest outout is the same as the length of nodes", {
   expect_equal(length(nodes),nrow(result5))
 })
@@ -77,6 +92,10 @@ test_that("the number rows in edgeScanKNearest outout is the same as the length 
 test_that("the number rows in edgeScanManhattan outout is the same as the length of nodes", {
   expect_equal(length(nodes),nrow(result6))
 })
+
+# test_that("the number rows in edgeScanMatrix outout is the same as the length of nodes", {
+#   expect_equal(length(nodes),nrow(result7))
+# })
 
 nodes <- processNode(POINodes, 'label', 'LonX', 'LatY', 'Bipartite')
 edges <- processEdge(POIEdges, 'Source', 'Target', 'Weight')
@@ -88,6 +107,16 @@ result4 <- NDScanManhattan(nodes, edges, 1000, directed=FALSE, bipartite=TRUE)
 result5 <- edgeScanKNearest(nodes, edges, 3, weighted=TRUE, bipartite=TRUE)
 result6 <- edgeScanManhattan(nodes, edges, 1000, weighted=TRUE, bipartite=TRUE)
 
+#create a fake matrix for bipartite network
+n = 1356
+m = matrix(sample.int(100, n*n, replace=TRUE), ncol=n)
+colnames(m) = POINodes$label[1:n]
+rownames(m) = POINodes$label[1:n]
+diag(m) <- NA
+m[lower.tri(m)] = t(m)[lower.tri(m)]
+
+result7 <- edgeScanMatrix(nodes, edges, 5, m, weighted=TRUE, bipartite=TRUE)[[1]]
+
 test_that("the number of nodes in output is as expected", {
   expect_equal(1045,nrow(result[[1]]))
   expect_equal(1045,nrow(result2[[1]]))
@@ -95,6 +124,7 @@ test_that("the number of nodes in output is as expected", {
   expect_equal(1045,nrow(result4[[1]]))
   expect_equal(1045,nrow(result5[[1]]))
   expect_equal(1045,nrow(result6[[1]]))
+  #expect_equal(1045,nrow(result7[[1]]))
 })
 
 test_that("the number of edges in output is as expected", {
@@ -104,6 +134,7 @@ test_that("the number of edges in output is as expected", {
   expect_equal(length(edges),nrow(result4[[2]]))
   expect_equal(length(edges),nrow(result5[[2]]))
   expect_equal(length(edges),nrow(result6[[2]]))
+  #expect_equal(length(edges),nrow(result7[[2]]))
 })
 
 

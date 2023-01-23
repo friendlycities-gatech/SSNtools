@@ -63,7 +63,7 @@ data(NYCMafiaEdges)
 #     label_name - the name of the column for node label
 #     lon_name - the name of the column for node longitude 
 #     lat_name - the name of the column for node latitude
-#     bipartite_name - (optional) the name of the column that indicates the bipartite set of the nodes 
+#     bipartite_name - (optional) the name of the column that indicates the bipartite set of the nodes. The set of nodes that EdgeScan or NDScan should report on should be coded as 1 in the biparite column, and 0 otherwise.  
 nodes = processNode(NYCMafiaNodes, 'label', 'LonX', 'LatY')
 # params:
 #     edges - a R dataframe containing source node label and target node label
@@ -96,6 +96,9 @@ heat = NDScanKNearest(nodes, edges, 10)[[1]]
 #-----calculates network density within a radius (500 meters - Manhattan distance) of each node in a network
 heat = NDScanManhattan(nodes, edges, 500)[[1]]
 
+#-----calculates network density within 500 unit of distance for each node in a network, given a user-defined distance matrix.  
+heat = NDScanMatrix(nodes, edges, 500, matrix)[[1]]
+
 #----calculate the density of edges within a radius (500 meters - Euclidean distance) of every node in a graph
 heat = edgeScanRadius(nodes, edges, 500)[[1]]
 
@@ -104,6 +107,15 @@ heat = edgeScanKNearest(nodes, edges, 10)[[1]]
 
 #-----calculates the density of edges within a radius (500 meters - Manhattan distance) of each node in a network
 heat = edgeScanManhattan(nodes, edges, 500)[[1]]
+
+#-----calculates the density of edges within (i.e., less than) 500 units of distance or travel time for each node in a network, given a user-defined distance or travel time matrix. The input matrix needs to be a full matrix with column and row names. For example, with three nodes, the matrix should the following, with diagnal coded as NA. Here, 0 has a practical meaning of zero distance. 
+
+#    A1 A2 A3
+# A1 NA 0  1
+# A2 0  NA 2
+# A3 1  2  NA
+
+heat = edgeScanMatrix(nodes, edges, 500, matrix)[[1]]
 ```
 
 #### Application to a Weighted and Bipartite Graph
@@ -116,8 +128,16 @@ inaccurate for real implications. The nodes in the dataset are
 restaurants in Atlanta (set 1) and centroids of census block group (set
 2). The edges in the dataset are visits from the census block group to
 restaurants. The weight of the edges represent the percentage of total
-visits coming from a particular census block group. You can call **POINodes (n=1356) and POIEdges (n=7926)** to directly access the sample dataset. The coordinates system is transformed
-with crs=26967.
+visits coming from a particular census block group. You can call
+**POINodes (n=1356) and POIEdges (n=7926)** to directly access the
+sample dataset. The coordinates system is transformed with crs=26967. If
+you are using your own dataset, there should be a bipartite column that
+indicates which set the node is in. The set that would like have
+EdgeScan or NDScan values reported should be coded as 1, and 0
+otherwise. In our **POINodes** sample dataset, restaurant POIs are coded
+as 1 and census block group centroids are coded as 0 in the bipartite
+network. Please reference the sample dataset if you are unclear of the
+input formats.
 
 Based on the definitions of EdgeScan and NDScan, **directed** argument
 is only implemented for ND-functions, while **weighted** argument is
@@ -139,6 +159,25 @@ edgeWithin = temp[[2]]
 temp = edgeScanRadius(nodes, edges, 1000, min=1, directed=FALSE, bipartite=TRUE)
 heat = temp[[1]]
 edgeWithin = temp[[2]]
+```
+
+If you are using **edgeScanMatrix** or **NDScanMatrix** functions on a
+bipartite network, your distance matrix provided in the function input
+has to be a full matrix, including distance between all node pairs, even
+for nodes within the same set. For example, if you have 4 nodes and they
+are A1, A2, B1, B2, then your distance matrix should be 4 by 4 and
+self-pairs are coded as NA (see below). It is important to note that
+even though B1B2 (or B2B1) has no connections, they should still be
+given a distance value (=3) in the distance matrix. This is because
+network density in bipartite network needs to know the total number of
+nodes (in both sets) within the distance threshold.
+
+``` r
+#     A1  A2  B1  B2
+# A1  NA  0   1   2  
+# A2  0   NA  1   2
+# B1  1   1   NA  3
+# B2  2   2   3   NA 
 ```
 
 #### Future Updates

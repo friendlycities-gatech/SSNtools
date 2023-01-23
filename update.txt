@@ -1,0 +1,31 @@
+## -------------------------------------- ## 
+## To make any changes to the SSNtools package, follow the steps below. 
+
+First, if you do not have it locally, clone SSNtools from Github: https://github.com/friendlycities-gatech/SSNtools. If you have the folder locally, make sure to run //git pull// to merge the new updates to local files. 
+## -------------------------------------- ## 
+
+## -------------------------------------- ## 
+## To update the functions in the SSNtools
+1) run all functions in SSNtools.R and utils.R 
+2) copy and paste the specific function you want to change in a local file, overrite it, and then test run before you modify the current package codes. 
+2) modify the package codes if you are confident that the codes work correctly.
+3) update both SSNtools.R file and the oxy-SSNtools.R file
+4) add test cases if necessary.
+5) go to Build (in R panel) and click install and restart. The package will be compiled and run through the test cases.
+6) check test cases if the build failed. 
+7) push to Github; run //git add . -> git commit -m "message" -> git push origin
+8) refresh R session and cleaned the environment. Download the most recently developed version to see if the new function is implemented correctly.
+## -------------------------------------- ## 
+
+## -------------------------------------- ## 
+## To add or rebuild dataset, change raw data in the data-raw folder and then run DATASET.R. 
+## -------------------------------------- ## 
+
+## -------------------------------------- ## 
+## To change the README, change in README.Rmd first, and then add 
+---
+output: rmarkdown::github_document
+---
+
+to the top of the Rmd file, then run //rmarkdown::render("README.Rmd")// or click Knit in RStudio to render md file. Then remove the output line from Rmd.
+## -------------------------------------- ## 

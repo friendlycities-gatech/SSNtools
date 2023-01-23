@@ -10,6 +10,8 @@ processNode = function(data, label_name, lon_name, lat_name, bipartite_name = NA
   if(!is.na(bipartite_name)) {
     names(data)[names(data) == bipartite_name] <- "bipartite"
     data$bipartite = as.numeric(as.character(data$bipartite))
+    #order so that bipartite = 1 is on top
+    data = data[order(data$bipartite, decreasing=T),]
   }
   
   #convert data frame to a list of named lists
@@ -275,6 +277,83 @@ edgeScanManhattan = function(nodes, edges, radius, min=3, weighted=FALSE, bipart
   return(list(heat, edgeWithin))
 }
 
+edgeScanMatrix = function(nodes, edges, thres, matrix, min=3, weighted=FALSE, bipartite=FALSE) {
+  if(!inherits(nodes, "list") | !inherits(edges, "list")) {
+    stop('nodes or edges arguments only intake a list of lists. Please use processNode or processEdge functions to convert R dataframe to a list of lists')
+  }
+  if(!inherits(matrix, "matrix")) {
+    stop('Your matrix input is not recognized as a matrix in R. Please check R matrix formats and make sure you have row and column names for the matrix.')
+  }
+  if(!is.null(nodes[[1]][['bipartite']]) & !bipartite) {
+    stop('Your data has a bipartite column, but your bipartite argument is set to FALSE. Please set your bipartite argument to TRUE')
+  }
+  
+  labels = c()
+  numedges = c()
+  
+  if(bipartite) {
+    if (is.null(nodes[[1]][['bipartite']])) {
+      stop('Node bipartite value is not available. Please check if node table contains a bipartite column and if the name of the bipartite column is provided in the processNode function')}
+    #sort so that bipartite == 1 is on top.
+    nodes = nodes[order(-sapply(nodes, function(x) x[['bipartite']]))] 
+    stop = length(Filter(function(x) all((x <- x$bipartite == 1)), nodes))
+    #calculate the number of nodes with bipartite == 1
+    bipartite_num = sum(as.numeric(unlist(nodes)[grepl(pattern='bipartite', names(unlist(nodes)))]))
+    bipartite_trans_matrix = matrix
+    #assign node pairs in the same set with values of 0
+    bipartite_trans_matrix[1:bipartite_num, 1:bipartite_num] <- NA
+    bipartite_trans_matrix[(bipartite_num+1):length(nodes), (bipartite_num+1):length(nodes)] <- NA
+  } else {
+    stop = length(nodes)
+  }
+  
+  for (i in seq(1, stop)) {
+    if(bipartite){
+      NodesInMatrix = NodesWithinMatrixThres(nodes[[i]][['label']], thres, bipartite_trans_matrix)
+    } else {
+      NodesInMatrix = NodesWithinMatrixThres(nodes[[i]][['label']], thres, matrix)
+    }
+    numNodesInMatrix = length(NodesInMatrix)
+    if (numNodesInMatrix < min) {
+      labels = c(labels, nodes[[i]][['label']])
+      numedges = c(numedges, NA)
+    } else {
+      numEdges = getNumEdgesInMatrix(nodes[[i]][['label']], names(NodesInMatrix), edges, weighted)
+      labels = c(labels, nodes[[i]][['label']])
+      numedges = c(numedges, numEdges)
+    }
+  }
+  
+  heat = data.frame('label' = labels, 'heat' = numedges)
+  if(abs(nodes[[1]][['lat']]) <= 180) {
+    warning("Distance may be calculated in the degree coordinates, which may need to be projected into other distance units")
+  }
+  
+  source = c()
+  target = c()
+  weight = c()
+  withinwindow = c()
+  
+  for (edge in edges) {
+    source = c(source, edge[['Source']])
+    target = c(target, edge[['Target']])
+    if(weighted) {weight = c(weight, edge[['Weight']])}
+    if (edge[['Target']] %in% names(NodesWithinMatrixThres(edge[['Source']], thres, matrix))) {
+      withinwindow = c(withinwindow, 1) 
+    } else {
+      withinwindow = c(withinwindow, 0) 
+    }
+  }
+  
+  if(weighted) {
+    edgeWithin = data.frame('Source' = source, 'Target' = target, 'Weight' = weight, 'WithinWindow' = withinwindow)
+  } else {
+    edgeWithin = data.frame('Source' = source, 'Target' = target, 'WithinWindow' = withinwindow)
+  }
+  
+  return(list(heat, edgeWithin))
+}
+
 # NDScan - calculates network density within a radius of each node in a network.
 # This is the ratio between the Actual Connections and the Potential Connections in a network.
 # 
@@ -466,6 +545,94 @@ NDScanManhattan = function(nodes, edges, radius, min=3, directed=FALSE, bipartit
     source = c(source, edge[['Source']])
     target = c(target, edge[['Target']])
     if (ManhattanDistance(nodes[[edge[['Source']]]], nodes[[edge[['Target']]]]) < radius) {
+      withinwindow = c(withinwindow, 1) 
+    } else {
+      withinwindow = c(withinwindow, 0) 
+    }
+  }
+  
+  edgeWithin = data.frame('Source' = source, 'Target' = target, 'WithinWindow' = withinwindow)
+  
+  return(list(heat, edgeWithin))
+}
+
+NDScanMatrix = function(nodes, edges, thres, matrix, min=3, directed=FALSE, bipartite=FALSE) {
+  if(!inherits(nodes, "list") | !inherits(edges, "list")) {
+    stop('nodes or edges arguments only intake a list of lists. Please use processNode or processEdge functions to convert R dataframe to a list of lists')
+  }
+  if(!inherits(matrix, "matrix")) {
+    stop('Your matrix input is not recognized as a matrix in R. Please check R matrix formats and make sure you have row and column names for the matrix.')
+  }
+  if(!is.null(nodes[[1]][['bipartite']]) & !bipartite) {
+    stop('Your data has a bipartite column, but your bipartite argument is set to FALSE. Please set your bipartite argument to TRUE')
+  }
+  
+  labels = c()
+  ndensity = c()
+  
+  if(bipartite) {
+    if (is.null(nodes[[1]][['bipartite']])) {
+      stop('Node bipartite value is not available. Please check if node table contains a bipartite column and if the name of the bipartite column is provided in the processNode function')}
+    #sort so that bipartite == 1 is on top.
+    nodes = nodes[order(-sapply(nodes, function(x) x[['bipartite']]))] 
+    stop = length(Filter(function(x) all((x <- x$bipartite == 1)), nodes))
+    #calculate the number of nodes with bipartite == 1
+    bipartite_num = sum(as.numeric(unlist(nodes)[grepl(pattern='bipartite', names(unlist(nodes)))]))
+    bipartite_trans_matrix = matrix
+    #assign node pairs in the same set with values of 0
+    bipartite_trans_matrix[1:bipartite_num, 1:bipartite_num] <- NA
+    bipartite_trans_matrix[(bipartite_num+1):length(nodes), (bipartite_num+1):length(nodes)] <- NA
+  } else {
+    stop = length(nodes)
+  }
+  
+  for (i in seq(1, stop)) {
+    if(bipartite){
+      NodesInMatrix = NodesWithinMatrixThres(nodes[[i]][['label']], thres, bipartite_trans_matrix)
+    } else {
+      NodesInMatrix = NodesWithinMatrixThres(nodes[[i]][['label']], thres, matrix)
+    }
+    numNodesInMatrix = length(NodesInMatrix)
+    if (numNodesInMatrix < min) {
+      labels = c(labels, nodes[[i]][['label']])
+      ndensity = c(ndensity, NA)
+    } else {
+      if(bipartite) {
+        if(directed) {dir = 2} else {dir = 1}
+        numNodesInMatrixBothSets = length(NodesWithinMatrixThres(nodes[[i]][['label']], thres, matrix))
+        potential = numNodesInMatrix * (numNodesInMatrixBothSets - numNodesInMatrix) * dir
+      } else {
+        if(directed) {dir = 1} else {dir = 2}
+        potential = numNodesInMatrix * (numNodesInMatrix - 1)/dir
+      }
+      numEdges = getNumEdgesInMatrix(nodes[[i]][['label']], names(NodesInMatrix), edges, FALSE)
+      nDensity = numEdges / potential 
+      labels = c(labels, nodes[[i]][['label']])
+      ndensity = c(ndensity, nDensity)
+      if (nDensity > 1) {stop(paste0('Node', i, ' network density is greater than 1'))}
+    }
+  }
+  
+  heat = data.frame('label' = labels, 'heat' = ndensity)
+  if(abs(nodes[[1]][['lat']]) <= 180) {
+    warning("Distance may be calculated in the degree coordinates, which may need to be projected into other distance units")
+  }
+  
+  source = c()
+  target = c()
+  withinwindow = c()
+  
+  for (edge in edges) {
+    source = c(source, edge[['Source']])
+    target = c(target, edge[['Target']])
+    
+    if(bipartite) {
+      nameWithinMatrix=names(NodesWithinMatrixThres(edge[['Source']], thres, bipartite_trans_matrix))
+    } else {
+      nameWithinMatrix=names(NodesWithinMatrixThres(edge[['Source']], thres, matrix))
+    }
+    
+    if (edge[['Target']] %in% nameWithinMatrix) {
       withinwindow = c(withinwindow, 1) 
     } else {
       withinwindow = c(withinwindow, 0) 

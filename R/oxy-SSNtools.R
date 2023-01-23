@@ -110,7 +110,7 @@ data = function(data) {
 #' @param nodes nodes of graph (a list of named lists)
 #' @param edges edges of graph (a list of lists)
 #' @param radius radius in the unit of coordinates of search window
-#' @param min (optional) minimum number of nodes in the distance window
+#' @param min (optional) minimum number of nodes in the searching window
 #' @param weighted (optional) boolean value of whether a weighted column has been included.
 #' @param bipartite (optional) boolean value of whether the data is a bipartite network
 #' @return a list of two dataframes. The first R datafrmae contains a column of node label, and a column of heat associated with the node. The second R dataframe contains the edge pairs and a boolean column indicating whether the edge is within the scanning window.
@@ -183,7 +183,7 @@ edgeScanRadius = function(nodes, edges, radius, min=3, weighted=FALSE, bipartite
 }
 
 #' @title edgeScanKNearest
-#' @description generates heatmap of edges between k nearest nodes to each independent node in a graph
+#' @description calculate number of edges for each independent node in a graph in a range of k nearest nodes
 #' @param nodes nodes of graph (a list of named lists)
 #' @param edges edges of graph (a list of lists)
 #' @param k number of nodes in search window
@@ -267,11 +267,11 @@ edgeScanKNearest = function(nodes, edges, k, weighted=FALSE, bipartite=FALSE) {
 }
 
 #' @title edgeScanManhattan
-#' @description FUNCTION_DESCRIPTION
-#' @param nodes PARAM_DESCRIPTION
-#' @param edges PARAM_DESCRIPTION
-#' @param radius PARAM_DESCRIPTION
-#' @param min PARAM_DESCRIPTION
+#' @description calculate number of edges for each independent node in a graph in a range of manhattan distance
+#' @param nodes nodes of graph (a list of named lists)
+#' @param edges edges of graph (a list of lists)
+#' @param radius radius in the unit of coordinates of search window (Manhattan distance)
+#' @param min (optional) minimum number of nodes in the searching window
 #' @param weighted (optional) boolean value of whether a weighted column has been included.
 #' @param bipartite (optional) boolean value of whether the data is a bipartite network
 #' @return a list of two dataframes. The first R datafrmae contains a column of node label, and a column of heat associated with the node. The second R dataframe contains the edge pairs and a boolean column indicating whether the edge is within the scanning window.
@@ -344,6 +344,100 @@ edgeScanManhattan = function(nodes, edges, radius, min=3, weighted=FALSE, bipart
   return(list(heat, edgeWithin))
 }
 
+#' @title edgeScanMatrix
+#' @description calculate number of edges per node in a given threshold from a user-defined matrix.
+#' @param nodes nodes of graph (a list of named lists)
+#' @param edges edges of graph (a list of lists)
+#' @param thres threshold (e.g., distance, travel time) to calculate the number of edges, given the user-defined matrix
+#' @param matrix a user-defined full matrix, including all pairs of nodes. The matrix's column and row names are consistent with nodes' labels. The cell values can be distance, travel time and so on. 
+#' @param min (optional) minimum number of nodes in the searching window
+#' @param weighted (optional) boolean value of whether a weighted column has been included.
+#' @param bipartite (optional) boolean value of whether the data is a bipartite network
+#' @return a list of two dataframes. The first R datafrmae contains a column of node label, and a column of heat associated with the node. The second R dataframe contains the edge pairs and a boolean column indicating whether the edge is within the scanning window.
+#' @details DETAILS
+#' @examples 
+#' \dontrun{
+#' if(interactive()){
+#'  #EXAMPLE1
+#' }
+#' @rdname edgeScanMatrix
+#' @export 
+edgeScanMatrix = function(nodes, edges, thres, matrix, min=3, weighted=FALSE, bipartite=FALSE) {
+  if(!inherits(nodes, "list") | !inherits(edges, "list")) {
+    stop('nodes or edges arguments only intake a list of lists. Please use processNode or processEdge functions to convert R dataframe to a list of lists')
+  }
+  if(!inherits(matrix, "matrix")) {
+    stop('Your matrix input is not recognized as a matrix in R. Please check R matrix formats and make sure you have row and column names for the matrix.')
+  }
+  if(!is.null(nodes[[1]][['bipartite']]) & !bipartite) {
+    stop('Your data has a bipartite column, but your bipartite argument is set to FALSE. Please set your bipartite argument to TRUE')
+  }
+  
+  labels = c()
+  numedges = c()
+  
+  if(bipartite) {
+    if (is.null(nodes[[1]][['bipartite']])) {
+      stop('Node bipartite value is not available. Please check if node table contains a bipartite column and if the name of the bipartite column is provided in the processNode function')}
+    #sort so that bipartite == 1 is on top.
+    nodes = nodes[order(-sapply(nodes, function(x) x[['bipartite']]))] 
+    stop = length(Filter(function(x) all((x <- x$bipartite == 1)), nodes))
+    #calculate the number of nodes with bipartite == 1
+    bipartite_num = sum(as.numeric(unlist(nodes)[grepl(pattern='bipartite', names(unlist(nodes)))]))
+    bipartite_trans_matrix = matrix
+    #assign node pairs in the same set with values of 0
+    bipartite_trans_matrix[1:bipartite_num, 1:bipartite_num] <- NA
+    bipartite_trans_matrix[(bipartite_num+1):length(nodes), (bipartite_num+1):length(nodes)] <- NA
+  } else {
+    stop = length(nodes)
+  }
+  
+  for (i in seq(1, stop)) {
+    if(bipartite){
+      NodesInMatrix = NodesWithinMatrixThres(nodes[[i]][['label']], thres, bipartite_trans_matrix)
+    } else {
+      NodesInMatrix = NodesWithinMatrixThres(nodes[[i]][['label']], thres, matrix)
+    }
+    numNodesInMatrix = length(NodesInMatrix)
+    if (numNodesInMatrix < min) {
+      labels = c(labels, nodes[[i]][['label']])
+      numedges = c(numedges, NA)
+    } else {
+      numEdges = getNumEdgesInMatrix(nodes[[i]][['label']], names(NodesInMatrix), edges, weighted)
+      labels = c(labels, nodes[[i]][['label']])
+      numedges = c(numedges, numEdges)
+    }
+  }
+  
+  heat = data.frame('label' = labels, 'heat' = numedges)
+  if(abs(nodes[[1]][['lat']]) <= 180) {
+    warning("Distance may be calculated in the degree coordinates, which may need to be projected into other distance units")
+  }
+  
+  source = c()
+  target = c()
+  weight = c()
+  withinwindow = c()
+  
+  for (edge in edges) {
+    source = c(source, edge[['Source']])
+    target = c(target, edge[['Target']])
+    if(weighted) {weight = c(weight, edge[['Weight']])}
+    if (edge[['Target']] %in% names(NodesWithinMatrixThres(edge[['Source']], thres, matrix))) {
+      withinwindow = c(withinwindow, 1) 
+    } else {
+      withinwindow = c(withinwindow, 0) 
+    }
+  }
+  
+  if(weighted) {
+    edgeWithin = data.frame('Source' = source, 'Target' = target, 'Weight' = weight, 'WithinWindow' = withinwindow)
+  } else {
+    edgeWithin = data.frame('Source' = source, 'Target' = target, 'WithinWindow' = withinwindow)
+  }
+  
+  return(list(heat, edgeWithin))
+}
 
 # Below are the three implementations of this, using radius, K-nearest, and Manhattan distance metrics.
 #' @title NDScanRadius
@@ -596,3 +690,112 @@ NDScanManhattan = function(nodes, edges, radius, min=3, directed=FALSE, bipartit
   
   return(list(heat, edgeWithin))
 }
+
+#' @title NDScanMatrix
+#' @description calculate network density per node in a given threshold (searching window) from a user-defined matrix.
+#' @param nodes nodes of graph (a list of named lists)
+#' @param edges edges of graph (a list of lists)
+#' @param thres threshold (e.g., distance, travel time) to calculate network density, given the user-defined matrix
+#' @param matrix a user-defined full matrix, including all pairs of nodes. The matrix's column and row names are consistent with nodes' labels. The cell values can be distance, travel time and so on. 
+#' @param min (optional) minimum number of nodes in the searching window
+#' @param directed (optional) boolean value of whether the network is directed.
+#' @param bipartite (optional) boolean value of whether the data is a bipartite network
+#' @return a list of two dataframes. The first R datafrmae contains a column of node label, and a column of heat associated with the node. The second R dataframe contains the edge pairs and a boolean column indicating whether the edge is within the scanning window.
+#' @details DETAILS
+#' @examples 
+#' \dontrun{
+#' if(interactive()){
+#'  #EXAMPLE1
+#' }
+#' @rdname NDScanMatrix
+#' @export 
+NDScanMatrix = function(nodes, edges, thres, matrix, min=3, directed=FALSE, bipartite=FALSE) {
+  if(!inherits(nodes, "list") | !inherits(edges, "list")) {
+    stop('nodes or edges arguments only intake a list of lists. Please use processNode or processEdge functions to convert R dataframe to a list of lists')
+  }
+  if(!inherits(matrix, "matrix")) {
+    stop('Your matrix input is not recognized as a matrix in R. Please check R matrix formats and make sure you have row and column names for the matrix.')
+  }
+  if(!is.null(nodes[[1]][['bipartite']]) & !bipartite) {
+    stop('Your data has a bipartite column, but your bipartite argument is set to FALSE. Please set your bipartite argument to TRUE')
+  }
+  
+  labels = c()
+  ndensity = c()
+  
+  if(bipartite) {
+    if (is.null(nodes[[1]][['bipartite']])) {
+      stop('Node bipartite value is not available. Please check if node table contains a bipartite column and if the name of the bipartite column is provided in the processNode function')}
+    #sort so that bipartite == 1 is on top.
+    nodes = nodes[order(-sapply(nodes, function(x) x[['bipartite']]))] 
+    stop = length(Filter(function(x) all((x <- x$bipartite == 1)), nodes))
+    #calculate the number of nodes with bipartite == 1
+    bipartite_num = sum(as.numeric(unlist(nodes)[grepl(pattern='bipartite', names(unlist(nodes)))]))
+    bipartite_trans_matrix = matrix
+    #assign node pairs in the same set with values of 0
+    bipartite_trans_matrix[1:bipartite_num, 1:bipartite_num] <- NA
+    bipartite_trans_matrix[(bipartite_num+1):length(nodes), (bipartite_num+1):length(nodes)] <- NA
+  } else {
+    stop = length(nodes)
+  }
+  
+  for (i in seq(1, stop)) {
+    if(bipartite){
+      NodesInMatrix = NodesWithinMatrixThres(nodes[[i]][['label']], thres, bipartite_trans_matrix)
+    } else {
+      NodesInMatrix = NodesWithinMatrixThres(nodes[[i]][['label']], thres, matrix)
+    }
+    numNodesInMatrix = length(NodesInMatrix)
+    if (numNodesInMatrix < min) {
+      labels = c(labels, nodes[[i]][['label']])
+      ndensity = c(ndensity, NA)
+    } else {
+      if(bipartite) {
+        if(directed) {dir = 2} else {dir = 1}
+        numNodesInMatrixBothSets = length(NodesWithinMatrixThres(nodes[[i]][['label']], thres, matrix))
+        potential = numNodesInMatrix * (numNodesInMatrixBothSets - numNodesInMatrix) * dir
+      } else {
+        if(directed) {dir = 1} else {dir = 2}
+        potential = numNodesInMatrix * (numNodesInMatrix - 1)/dir
+      }
+      numEdges = getNumEdgesInMatrix(nodes[[i]][['label']], names(NodesInMatrix), edges, FALSE)
+      nDensity = numEdges / potential 
+      labels = c(labels, nodes[[i]][['label']])
+      ndensity = c(ndensity, nDensity)
+      if (nDensity > 1) {stop(paste0('Node', i, ' network density is greater than 1'))}
+    }
+  }
+  
+  heat = data.frame('label' = labels, 'heat' = ndensity)
+  if(abs(nodes[[1]][['lat']]) <= 180) {
+    warning("Distance may be calculated in the degree coordinates, which may need to be projected into other distance units")
+  }
+  
+  source = c()
+  target = c()
+  withinwindow = c()
+  
+  for (edge in edges) {
+    source = c(source, edge[['Source']])
+    target = c(target, edge[['Target']])
+    
+    if(bipartite) {
+      nameWithinMatrix=names(NodesWithinMatrixThres(edge[['Source']], thres, bipartite_trans_matrix))
+    } else {
+      nameWithinMatrix=names(NodesWithinMatrixThres(edge[['Source']], thres, matrix))
+    }
+    
+    if (edge[['Target']] %in% nameWithinMatrix) {
+      withinwindow = c(withinwindow, 1) 
+    } else {
+      withinwindow = c(withinwindow, 0) 
+    }
+  }
+  
+  edgeWithin = data.frame('Source' = source, 'Target' = target, 'WithinWindow' = withinwindow)
+  
+  return(list(heat, edgeWithin))
+}
+
+
+

@@ -311,3 +311,25 @@ triangleInGraph = function(graph) {
   trace = getTrace(aux3)  
   return (floor(trace / 6))
 }
+
+#return a matrix. If the network is bipartite, assign value 0 to pairs that are not supposed to have connections, i.e., in the same category
+NodesWithinMatrixThres = function(node_label, thres, matrix){
+  #return matrix of nodes with only node pairs within distance threshold, excluding same nodes.  
+  return(matrix[node_label,][matrix[node_label,]<thres & !is.na(matrix[node_label,])]) #matrix[node_label,]!=0
+}
+
+getNumEdgesInMatrix = function(node_label, names, edges, weighted) {
+  retVal = 0
+  for (edge in edges) {
+    if(edge[['Source']] %in% c(names, node_label) & edge[['Target']] %in% c(names, node_label)) {
+      if(weighted) {
+        if(is.null(edge[['Weight']])) {
+          stop('Edge weight is not available. Please check if edge table contains a weight column and if the name of the weight column is provided in the processEdge function')
+        } else {retVal = retVal + edge[['Weight']]}
+      } else {
+        retVal = retVal + 1
+      }
+    }
+  }
+  return (retVal)
+}

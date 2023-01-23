@@ -14,13 +14,13 @@ edgeScanManhattan(
 )
 }
 \arguments{
-\item{nodes}{PARAM_DESCRIPTION}
+\item{nodes}{nodes of graph (a list of named lists)}
 
-\item{edges}{PARAM_DESCRIPTION}
+\item{edges}{edges of graph (a list of lists)}
 
-\item{radius}{PARAM_DESCRIPTION}
+\item{radius}{radius in the unit of coordinates of search window (Manhattan distance)}
 
-\item{min}{PARAM_DESCRIPTION}
+\item{min}{(optional) minimum number of nodes in the searching window}
 
 \item{weighted}{(optional) boolean value of whether a weighted column has been included.}
 
@@ -30,7 +30,7 @@ edgeScanManhattan(
 a list of two dataframes. The first R datafrmae contains a column of node label, and a column of heat associated with the node. The second R dataframe contains the edge pairs and a boolean column indicating whether the edge is within the scanning window.
 }
 \description{
-FUNCTION_DESCRIPTION
+calculate number of edges for each independent node in a graph in a range of manhattan distance
 }
 \details{
 DETAILS

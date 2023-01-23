@@ -2,9 +2,11 @@
 
 export(NDScanKNearest)
 export(NDScanManhattan)
+export(NDScanMatrix)
 export(NDScanRadius)
 export(edgeScanKNearest)
 export(edgeScanManhattan)
+export(edgeScanMatrix)
 export(edgeScanRadius)
 export(processEdge)
 export(processNode)
