@@ -161,6 +161,8 @@ heat = temp[[1]]
 edgeWithin = temp[[2]]
 ```
 
+#### Special notes to use edgeScanMatrix or NDScanMatrix
+
 If you are using **edgeScanMatrix** or **NDScanMatrix** functions on a
 bipartite network, your distance matrix provided in the function input
 has to be a full matrix, including distance between all node pairs, even
@@ -178,6 +180,47 @@ nodes (in both sets) within the distance threshold.
 # A2  0   NA  1   2
 # B1  1   1   NA  3
 # B2  2   2   3   NA 
+```
+
+If needed, you can use the following code snippet to generate a test
+matrix for **NYCMafiaNodes**.
+
+``` r
+n = 298
+m = matrix(sample.int(10, n*n, replace=TRUE), ncol=n)
+colnames(m) = NYCMafiaNodes$label[1:n]
+rownames(m) = NYCMafiaNodes$label[1:n]
+diag(m) <- NA
+m[lower.tri(m)] = t(m)[lower.tri(m)]
+heat = edgeScanMatrix(nodes, edges, 5, m, min=3)
+```
+
+#### Run time and optimization
+
+Note that, existing functions are not optimized for large-scale spatial
+social networks. As a benchmark, the application of **NDScanRadius** on
+**NYCMafiaNodes** (n=298) and **NYCMafiaEdges**(n=946) returns results
+in 0.5s, and the same function on **POINodes (n=1356) and POIEdges
+(n=7926)** returns results in 3m. The time increases exponentially with
+the size of the network.
+
+Among all the functions, **edgeScanMatrix** and **NDScanMatrix**
+functions are implemented in the most time-efficient manner (matrix
+operation rather than list operation). Thus, if you really need to
+optimize run time, you can use these two functions, and generate your
+own Euclidean, Manhattan, or KNN matrices (just like distance matrix).
+
+You can use the following code snippet to transform a node and edge
+table (assuming in R dataframe, with three columns: source, target, and
+distance) into an adjacency matrix acceptable to **edgeScanMatrix** and
+**NDScanMatrix**.
+
+``` r
+library(igraph)
+g = graph_from_data_frame(edgeTable, directed=FALSE, vertices=nodeTable)
+mat = as_adjacency_matrix(g, sparse=F, attr="distance")
+mat[mat==0]<-NA
+heat = edgeScanMatrix(nodes, edges, 1000, mat, min=3)
 ```
 
 #### Future Updates
