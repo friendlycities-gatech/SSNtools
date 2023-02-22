@@ -212,6 +212,20 @@ testEdgeInRange = function(nodes, edge, node, radius) {
   }
 }
 
+testEdgeInRangeMatrix = function(edge, matrix, thres) {
+  edgeSource = edge[['Source']]
+  edgeTarget = edge[['Target']]
+  if (!edgeSource %in% rownames(matrix) | !edgeTarget %in% rownames(matrix)) {
+    stop('Cannot find edge source or target in the node table. Please filter your edge table to contain edges that have corresponding nodes in the node table, or double check whether your node label column has the same values as edge source and target columns.')
+  } else {
+    if (!is.na(matrix[edgeSource, edgeTarget]) & matrix[edgeSource, edgeTarget] <= thres) {
+      return (TRUE)
+    } else {
+      return (FALSE)
+    }
+  }
+}
+
 #Gets the number of edges within a radius of a given node
 getNumEdgesInRange = function(nodes, edges, node, radius, weighted) {
   retVal = 0 
@@ -318,10 +332,10 @@ NodesWithinMatrixThres = function(node_label, thres, matrix){
   return(matrix[node_label,][matrix[node_label,]<thres & !is.na(matrix[node_label,])]) #matrix[node_label,]!=0
 }
 
-getNumEdgesInMatrix = function(node_label, names, edges, weighted) {
+getNumEdgesInMatrix = function(node_label, names, edges, matrix, thres, weighted) {
   retVal = 0
   for (edge in edges) {
-    if(edge[['Source']] %in% c(names, node_label) & edge[['Target']] %in% c(names, node_label)) {
+    if(edge[['Source']] %in% c(names, node_label) & edge[['Target']] %in% c(names, node_label) & testEdgeInRangeMatrix(edge, matrix, thres)) {
       if(weighted) {
         if(is.null(edge[['Weight']])) {
           stop('Edge weight is not available. Please check if edge table contains a weight column and if the name of the weight column is provided in the processEdge function')

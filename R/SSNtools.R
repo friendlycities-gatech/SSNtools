@@ -308,17 +308,18 @@ edgeScanMatrix = function(nodes, edges, thres, matrix, min=3, weighted=FALSE, bi
   }
   
   for (i in seq(1, stop)) {
-    if(bipartite){
-      NodesInMatrix = NodesWithinMatrixThres(nodes[[i]][['label']], thres, bipartite_trans_matrix)
+    NodesInMatrix = NodesWithinMatrixThres(nodes[[i]][['label']], thres, matrix) #NodesInMatrix includes POI and centroids
+    if(bipartite) {
+      CentroidsInMatrix = NodesWithinMatrixThres(nodes[[i]][['label']], thres, bipartite_trans_matrix) #CentroidsInMatrix only includes centroids
+      numNodesInMatrix = length(CentroidsInMatrix)  
     } else {
-      NodesInMatrix = NodesWithinMatrixThres(nodes[[i]][['label']], thres, matrix)
+      numNodesInMatrix = length(NodesInMatrix)  
     }
-    numNodesInMatrix = length(NodesInMatrix) + 1 #adding self node
     if (numNodesInMatrix < min) {
       labels = c(labels, nodes[[i]][['label']])
       numedges = c(numedges, NA)
     } else {
-      numEdges = getNumEdgesInMatrix(nodes[[i]][['label']], names(NodesInMatrix), edges, weighted)
+      numEdges = getNumEdgesInMatrix(nodes[[i]][['label']], names(NodesInMatrix), edges, matrix, thres, weighted)
       labels = c(labels, nodes[[i]][['label']])
       numedges = c(numedges, numEdges)
     }
@@ -338,7 +339,14 @@ edgeScanMatrix = function(nodes, edges, thres, matrix, min=3, weighted=FALSE, bi
     source = c(source, edge[['Source']])
     target = c(target, edge[['Target']])
     if(weighted) {weight = c(weight, edge[['Weight']])}
-    if (edge[['Target']] %in% names(NodesWithinMatrixThres(edge[['Source']], thres, matrix))) {
+    
+    if(bipartite) {
+      nameWithinMatrix=names(NodesWithinMatrixThres(edge[['Source']], thres, bipartite_trans_matrix))
+    } else {
+      nameWithinMatrix=names(NodesWithinMatrixThres(edge[['Source']], thres, matrix))
+    }
+    
+    if (edge[['Target']] %in% nameWithinMatrix) {
       withinwindow = c(withinwindow, 1) 
     } else {
       withinwindow = c(withinwindow, 0) 
@@ -587,25 +595,25 @@ NDScanMatrix = function(nodes, edges, thres, matrix, min=3, directed=FALSE, bipa
   }
   
   for (i in seq(1, stop)) {
-    if(bipartite){
-      NodesInMatrix = NodesWithinMatrixThres(nodes[[i]][['label']], thres, bipartite_trans_matrix)
+    NodesInMatrix = NodesWithinMatrixThres(nodes[[i]][['label']], thres, matrix) #NodesInMatrix includes POI and centroids
+    if(bipartite) {
+      CentroidsInMatrix = NodesWithinMatrixThres(nodes[[i]][['label']], thres, bipartite_trans_matrix) #CentroidsInMatrix only includes centroids
+      numNodesInMatrix = length(CentroidsInMatrix)  
     } else {
-      NodesInMatrix = NodesWithinMatrixThres(nodes[[i]][['label']], thres, matrix)
+      numNodesInMatrix = length(NodesInMatrix)  
     }
-    numNodesInMatrix = length(NodesInMatrix) + 1 #adding self node
     if (numNodesInMatrix < min) {
       labels = c(labels, nodes[[i]][['label']])
       ndensity = c(ndensity, NA)
     } else {
       if(bipartite) {
         if(directed) {dir = 2} else {dir = 1}
-        numNodesInMatrixBothSets = length(NodesWithinMatrixThres(nodes[[i]][['label']], thres, matrix))
-        potential = numNodesInMatrix * (numNodesInMatrixBothSets - numNodesInMatrix) * dir
+        potential = numNodesInMatrix * (length(NodesInMatrix)+1 - numNodesInMatrix) * dir #plus 1 for including the self node
       } else {
         if(directed) {dir = 1} else {dir = 2}
         potential = numNodesInMatrix * (numNodesInMatrix - 1)/dir
       }
-      numEdges = getNumEdgesInMatrix(nodes[[i]][['label']], names(NodesInMatrix), edges, FALSE)
+      numEdges = getNumEdgesInMatrix(nodes[[i]][['label']], names(NodesInMatrix), edges, matrix, thres, FALSE)
       nDensity = numEdges / potential 
       labels = c(labels, nodes[[i]][['label']])
       ndensity = c(ndensity, nDensity)
