@@ -163,16 +163,16 @@ edgeWithin = temp[[2]]
 
 #### Special notes to use edgeScanMatrix or NDScanMatrix
 
-If you are using **edgeScanMatrix** or **NDScanMatrix** functions on a
-bipartite network, your distance matrix provided in the function input
-has to be a full matrix, including distance between all node pairs, even
-for nodes within the same set. For example, if you have 4 nodes and they
-are A1, A2, B1, B2, then your distance matrix should be 4 by 4 and
-self-pairs are coded as NA (see below). It is important to note that
-even though B1B2 (or B2B1) has no connections, they should still be
-given a distance value (=3) in the distance matrix. This is because
-network density in bipartite network needs to know the total number of
-nodes (in both sets) within the distance threshold.
+The input matrix for **edgeScanMatrix** or **NDScanMatrix** function
+needs to be a full matrix (i.e., the column and row includes all nodes).
+This is still true for bipartite networks and values are required even
+for nodes within the same set. For example, in a bipartite network, if
+you have 4 nodes and they are A1, A2, B1, B2, then your distance matrix
+should be 4 by 4 and self-pairs are coded as NA (see below). It is
+important to note that even though B1B2 (or B2B1) has no connections,
+they should still be given a distance value (=3) in the distance matrix.
+This is because number of edges and network density needs to know all
+the nodes within the distance threshold.
 
 ``` r
 #     A1  A2  B1  B2
@@ -186,13 +186,65 @@ If needed, you can use the following code snippet to generate a test
 matrix for **NYCMafiaNodes**.
 
 ``` r
+#create a 298*298 matrix filled with values between 1 and 10
 n = 298
 m = matrix(sample.int(10, n*n, replace=TRUE), ncol=n)
+
+#assign node labels to column and row names
 colnames(m) = NYCMafiaNodes$label[1:n]
 rownames(m) = NYCMafiaNodes$label[1:n]
+
+#set values of self pairs to NA
 diag(m) <- NA
+
+#make sure matrix values are symmetrical
 m[lower.tri(m)] = t(m)[lower.tri(m)]
+
+#use the matrix in edgeScanMatrix function
+nodes = processNode(NYCMafiaNodes, 'label', 'LonX', 'LatY')
+edges = processEdge(NYCMafiaEdges, 'Source', 'Target')
 heat = edgeScanMatrix(nodes, edges, 5, m, min=3)
+```
+
+You can use the following code snippet to transform a fully connected
+edge table **allEdgesTable** (for example, in a R dataframe, with three
+columns: source, target, and walking_distance) into an adjacency matrix
+acceptable to **edgeScanMatrix** and **NDScanMatrix**. Note that this
+edge table is **DIFFERENT** from the edge table of your network (e.g.,
+NYCMafiaEdges): it represents all possible edges (node pairs) and their
+associated distances. The size of this table can grow quickly with
+network size. For example, for NYCMafia data (n = 298),
+**allEdgesTable** has 44,253 rows.
+
+The following codes show how to generate **allEdgesTable** for
+**NYCMafiaNodes**.
+
+``` r
+allEdgesTable = as.data.frame(t(combn(NYCMafiaNodes$label, 2))) 
+colnames(allEdgesTable) <- c('Source', 'Target')
+```
+
+The following codes assume **allEdgesTable** already has a column called
+**walking_distance** and show how to generate an input matrix for
+**edgeScanMatrix**.
+
+``` r
+library(igraph)
+library(tidyverse)
+
+#convert allEdgesTable into a network graph. 
+g = graph_from_data_frame(allEdgesTable %>% mutate(walking_distance == 0, 0.001, walking_distance), 
+directed=FALSE, vertices=nodeTable)
+
+#as_adjacency_matrix function defaults to fill in pairs without values with zero. Since zero has practical meaning, we would like cells with no distance values to be coded as NA, and cells that have zero distance to be coded as 0.
+mat = as_adjacency_matrix(g, sparse=F, attr="walking_distance")
+mat[mat==0]<-NA
+mat[mat==0.001]<-0
+
+#use the matrix in edgeScanMatrix function
+nodes = processNode(NYCMafiaNodes, 'label', 'LonX', 'LatY')
+edges = processEdge(NYCMafiaEdges, 'Source', 'Target')
+heat = edgeScanMatrix(nodes, edges, 1000, mat, min=3)
 ```
 
 #### Run time and optimization
@@ -200,7 +252,7 @@ heat = edgeScanMatrix(nodes, edges, 5, m, min=3)
 Note that, existing functions are not optimized for large-scale spatial
 social networks. As a benchmark, the application of **NDScanRadius** on
 **NYCMafiaNodes** (n=298) and **NYCMafiaEdges**(n=946) returns results
-in 0.5s, and the same function on **POINodes (n=1356) and POIEdges
+in 0.5s, and the same function on **POINodes (n=1356)** and **POIEdges
 (n=7926)** returns results in 3m. The time increases exponentially with
 the size of the network.
 
@@ -209,19 +261,6 @@ functions are implemented in the most time-efficient manner (matrix
 operation rather than list operation). Thus, if you really need to
 optimize run time, you can use these two functions, and generate your
 own Euclidean, Manhattan, or KNN matrices (just like distance matrix).
-
-You can use the following code snippet to transform a node and edge
-table (assuming in R dataframe, with three columns: source, target, and
-distance) into an adjacency matrix acceptable to **edgeScanMatrix** and
-**NDScanMatrix**.
-
-``` r
-library(igraph)
-g = graph_from_data_frame(edgeTable, directed=FALSE, vertices=nodeTable)
-mat = as_adjacency_matrix(g, sparse=F, attr="distance")
-mat[mat==0]<-NA
-heat = edgeScanMatrix(nodes, edges, 1000, mat, min=3)
-```
 
 #### Future Updates
 
