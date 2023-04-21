@@ -43,13 +43,13 @@ dataset. The coordinate unit of the sample dataset is **meter**
 (crs=32118). The function currently only applies to **undirected**
 graph.
 
-All the main functions (e.g, edgeScanRadius and NDScanRadius) will
+All the main functions (e.g., edgeScanRadius and NDScanRadius) will
 return a list of two dataframes. The first dataframe is a node table
 that has the node label and the **heat**, presenting the number of edges
 in EdgeScan and network density in NDScan respectively. The second
 dataframe is an edge table that has the edge pair and a binary column
 **edgeWithin** indicating whether the edge is within the scanning
-window.
+window. This dataframe can be helpful to filter edges for visualization.
 
 ``` r
 library(SSNtools)
@@ -84,6 +84,55 @@ heat = NDScanRadius(nodes, edges, 500, 5)[[1]]
 edgeWithin = NDScanRadius(nodes, edges, 500, 5)[[2]]
 ```
 
+The first step `processNode()` and `processEdge()` converts R dataframe
+data to a list of named lists. If you are familiar with Python, this
+output format resembles object-oriented programming. You can read and
+modify data like the following:
+
+``` r
+# retrieve the first node
+nodes[[1]]
+
+# $label
+# [1] "AMAROSA-ALEXANDER"
+
+# $lon
+# [1] 302206.2
+
+# $lat
+# [1] 57958.61
+
+# retrieve the node list named after "AMAROSA-ALEXANDER"
+nodes[["AMAROSA-ALEXANDER"]]
+
+# $label
+# [1] "AMAROSA-ALEXANDER"
+
+# $lon
+# [1] 302206.2
+
+# $lat
+# [1] 57958.61
+
+# retrieve node attributes for node named after "AMAROSA-ALEXANDER"
+nodes[["AMAROSA-ALEXANDER"]][['lon']]
+
+# 302206.2
+
+# modify node attributes for node named after "AMAROSA-ALEXANDER"
+nodes[["AMAROSA-ALEXANDER"]][['label']] <- 'test'
+nodes[["AMAROSA-ALEXANDER"]]
+
+# $label
+# [1] "test"
+
+# $lon
+# [1] 302206.2
+
+# $lat
+# [1] 57958.61
+```
+
 #### Other Available Functions
 
 Currently available functions in SSNtools for SSN hotspot detection:
@@ -108,7 +157,7 @@ heat = edgeScanKNearest(nodes, edges, 10)[[1]]
 #-----calculates the density of edges within a radius (500 meters - Manhattan distance) of each node in a network
 heat = edgeScanManhattan(nodes, edges, 500)[[1]]
 
-#-----calculates the density of edges within (i.e., less than) 500 units of distance or travel time for each node in a network, given a user-defined distance or travel time matrix. The input matrix needs to be a full matrix with column and row names. For example, with three nodes, the matrix should the following, with diagnal coded as NA. Here, 0 has a practical meaning of zero distance. 
+#-----calculates the density of edges within (i.e., less than) 500 units of distance or travel time for each node in a network, given a user-defined distance or travel time matrix. The input matrix needs to be a full matrix with column and row names. For example, with three nodes, the matrix should look like the following, with diagnal coded as NA. Noted that 0 has a practical meaning of zero distance that is different from NA. 
 
 #    A1 A2 A3
 # A1 NA 0  1
@@ -126,18 +175,18 @@ from SafeGraph with extra filters and coding to hide sensitive
 information. The dataset is meant to be educational and thus can be
 inaccurate for real implications. The nodes in the dataset are
 restaurants in Atlanta (set 1) and centroids of census block group (set
-2). The edges in the dataset are visits from the census block group to
+0). The edges in the dataset are visits from the census block group to
 restaurants. The weight of the edges represent the percentage of total
 visits coming from a particular census block group. You can call
 **POINodes (n=1356) and POIEdges (n=7926)** to directly access the
-sample dataset. The coordinates system is transformed with crs=26967. If
-you are using your own dataset, there should be a bipartite column that
-indicates which set the node is in. The set that would like have
-EdgeScan or NDScan values reported should be coded as 1, and 0
-otherwise. In our **POINodes** sample dataset, restaurant POIs are coded
-as 1 and census block group centroids are coded as 0 in the bipartite
-network. Please reference the sample dataset if you are unclear of the
-input formats.
+sample dataset. The coordinates system is transformed with crs=26967
+(unit meter). If you are using your own dataset, there should be a
+bipartite column that indicates which set the node is in. The set that
+would like have EdgeScan or NDScan values reported should be coded as 1,
+and 0 otherwise. In our **POINodes** sample dataset, restaurant POIs are
+coded as 1 and census block group centroids are coded as 0 in the
+bipartite network. Please reference the sample dataset if you are
+unclear of the input formats.
 
 Based on the definitions of EdgeScan and NDScan, **directed** argument
 is only implemented for ND-functions, while **weighted** argument is
@@ -152,11 +201,13 @@ data(POIEdges)
 nodes = processNode(POINodes, 'label', 'LonX', 'LatY', 'Bipartite')
 edges = processEdge(POIEdges, 'Source', 'Target', 'Weight')
 
-temp = NDScanRadius(nodes, edges, 1000, min=1, directed=FALSE, bipartite=TRUE)
+#takes about 3 mins to run
+temp = NDScanKNearest(nodes, edges, 5, directed=FALSE, bipartite=TRUE)
 heat = temp[[1]]
 edgeWithin = temp[[2]]
 
-temp = edgeScanRadius(nodes, edges, 1000, min=1, directed=FALSE, bipartite=TRUE)
+#takes about 3 mins to run
+temp = edgeScanKNearest(nodes, edges, 5, weighted=TRUE, bipartite=TRUE)
 heat = temp[[1]]
 edgeWithin = temp[[2]]
 ```
@@ -187,7 +238,7 @@ matrix for **NYCMafiaNodes**.
 
 ``` r
 #create a 298*298 matrix filled with values between 1 and 10
-n = 298
+n = nrow(NYCMafiaNodes)
 m = matrix(sample.int(10, n*n, replace=TRUE), ncol=n)
 
 #assign node labels to column and row names
@@ -232,12 +283,16 @@ The following codes assume **allEdgesTable** already has a column called
 library(igraph)
 library(tidyverse)
 
-#convert allEdgesTable into a network graph. 
+#assume users generated walking distance for each edge
+allEdgesTable$walking_distance <- "USER INPUT" 
+
+#convert allEdgesTable into a network graph; 
+#change walking distance that has a practical meaning of 0 to 0.001 because as_adjacency_matrix function defaults to fill in pairs without values with 0. 
 g = graph_from_data_frame(allEdgesTable %>% mutate(walking_distance == 0, 0.001, walking_distance), 
 directed=FALSE, vertices=nodeTable)
-
-#as_adjacency_matrix function defaults to fill in pairs without values with zero. Since zero has practical meaning, we would like cells with no distance values to be coded as NA, and cells that have zero distance to be coded as 0.
 mat = as_adjacency_matrix(g, sparse=F, attr="walking_distance")
+
+#Since 0 has practical meaning, we would like cells with no distance values to be coded as NA, and cells that have 0 distance (changed to 0.001 above) to be coded as 0. 
 mat[mat==0]<-NA
 mat[mat==0.001]<-0
 
