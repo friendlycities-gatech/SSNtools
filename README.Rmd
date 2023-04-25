@@ -17,7 +17,7 @@ output: rmarkdown::github_document
 Please see the tutorial [Spatial Social Networks (SSN) Visualization and Metrics with R](https://friendlycities-gatech.github.io/SSN_tutorial/advanced-ssn-metrics.html) for more detailed usage demonstration. More advanced metrics will be implemented in the future. 
 
 * [SSN Hostpots Detection](https://friendlycities-gatech.github.io/SSN_tutorial/advanced-ssn-metrics.html#ssn-hotspots-detection)
-* [Local (Dis)connection (K-fullfillment and Local network flattening ratio)]()
+* [K-fullfillment](https://friendlycities-gatech.github.io/SSN_tutorial/advanced-ssn-metrics.html#k-fullfillment)
 
 #### Installation
 
@@ -41,14 +41,14 @@ data(NYCMafiaEdges)
 
 # ----process dataframe into a list of lists 
 # params:
-#     nodes - a R dataframe containing node label, longitude, and latitude
+#     data - a R dataframe containing node label, longitude, and latitude
 #     label_name - the name of the column for node label
 #     lon_name - the name of the column for node longitude 
 #     lat_name - the name of the column for node latitude
 #     bipartite_name - (optional) the name of the column that indicates the bipartite set of the nodes. The set of nodes that EdgeScan or NDScan should report on should be coded as 1 in the biparite column, and 0 otherwise.  
 nodes = processNode(NYCMafiaNodes, 'label', 'LonX', 'LatY')
 # params:
-#     edges - a R dataframe containing source node label and target node label
+#     data - a R dataframe containing source node label and target node label
 #     source_name - the name of the column for source node label
 #     target_name - the name of the column for target node label
 #     weight_name - (optional) the name of the column for edge weight 

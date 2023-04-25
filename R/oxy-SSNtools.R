@@ -852,8 +852,8 @@ Kfullfillment = function(nodes, edges, minK=1, bipartite=FALSE) {
     #if bipartite, only need to check if Target is a k-nearest neighbor of the 'Source'
     edge_table = lapply(edges, function(edge) {
       source_knn = knn_list[[edge[['Source']]]]
-      is_k_nearest_neighbor = as.integer(edge[['Target']] %in% source_knn)
-      return(list(Source = edge[['Source']], Target = edge[['Target']], is_k_nearest_neighbor = is_k_nearest_neighbor))
+      is_K_nearest_neighbor = as.integer(edge[['Target']] %in% source_knn)
+      return(list(Source = edge[['Source']], Target = edge[['Target']], is_K_nearest_neighbor = is_K_nearest_neighbor))
     })
     
   } else {
@@ -885,12 +885,12 @@ Kfullfillment = function(nodes, edges, minK=1, bipartite=FALSE) {
     edge_table = lapply(edges, function(edge) {
       source_knn = knn_list[[edge[['Source']]]]
       target_knn = knn_list[[edge[['Target']]]]
-      is_k_nearest_neighbor = as.integer(edge[['Target']] %in% source_knn | edge[['Source']] %in% target_knn)
-      return(list(Source = edge[['Source']], Target = edge[['Target']], is_k_nearest_neighbor = is_k_nearest_neighbor))
+      is_K_nearest_neighbor = as.integer(edge[['Target']] %in% source_knn | edge[['Source']] %in% target_knn)
+      return(list(Source = edge[['Source']], Target = edge[['Target']], is_K_nearest_neighbor = is_K_nearest_neighbor))
     })
   }
   
-  node_table = data.frame('label' = unname(unlist(labels)), 'k' = k_values, 
+  node_table = data.frame('label' = unname(unlist(labels)), 'K' = k_values, 
                           'K_fullfillment' = unname(unlist(lapply(result, `[[`, "kf"))))
   
   edge_table = do.call(rbind.data.frame, edge_table)
