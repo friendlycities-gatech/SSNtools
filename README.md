@@ -364,7 +364,7 @@ incorporated in the package in the near future.
 
 Liang, X., Baker, J., DellaPosta, D., & Andris, C. (2023). Is your
 neighbor your friend? Scan methods for spatial social network hotspot
-detection. *Transctions in GIS*. <https://doi.org/10.1111/tgis.13050>
+detection. *Transactions in GIS*. <https://doi.org/10.1111/tgis.13050>
 
 Andris, C., DellaPosta, D., Freelin, B. N., Zhu, X., Hinger, B., & Chen,
 H. (2021). To racketeer among neighbors: spatial features of criminal

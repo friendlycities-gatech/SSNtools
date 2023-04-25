@@ -2,7 +2,7 @@
 output: rmarkdown::github_document
 ---
 
-## Advanced Metrics for Analayzing Spatial Social (Non-planar) Networks 
+# Advanced Metrics for Analayzing Spatial Social (Non-planar) Networks 
 
 **SSNtools** is an R package that provides metrics for analyzing and visualizing spatial social networks. It is implemented with base R syntax. 
 
@@ -19,7 +19,7 @@ Please see the tutorial [Spatial Social Networks (SSN) Visualization and Metrics
 * [SSN Hostpots Detection](https://friendlycities-gatech.github.io/SSN_tutorial/advanced-ssn-metrics.html#ssn-hotspots-detection)
 * [K-fullfillment](https://friendlycities-gatech.github.io/SSN_tutorial/advanced-ssn-metrics.html#k-fullfillment)
 
-#### Installation
+## Installation
 
 You can install the development version from GitHub with:
 
@@ -27,7 +27,7 @@ You can install the development version from GitHub with:
 # install.packages("devtools")
 devtools::install_github("friendlycities-gatech/SSNtools")
 ```
-#### Example
+## Example
 
 This is a basic example which shows you how to use the main functions of SSN hotspot detections in SSNtools. The package comes with an example dataset, which is a spatial social network of Mafia members in New York City in the 1960s. See [To racketeer among neighbors: spatial features of criminal collaboration in the American Mafia](https://drive.google.com/file/d/1guVURnryYUyXaJ3A7SoMFMpkv7CUx6He/view) for more details about the dataset. You can call **NYCMafiaNodes** (n=298) and **NYCMafiaEdges**(n=946) to directly access the sample dataset. The coordinate unit of the sample dataset is **meter** (crs=32118). The function currently only applies to **undirected** graph. 
 
@@ -129,7 +129,7 @@ nodes[["AMAROSA-ALEXANDER"]]
 # [1] 57958.61
 ```
 
-#### Other Available Functions 
+## Other Available Functions 
 Currently available functions in SSNtools for SSN hotspot detection:
 ``` r
 library(SSNtools)
@@ -162,7 +162,7 @@ heat = NDScanMatrix(nodes, edges, 500, matrix)[[1]]
 heat = edgeScanMatrix(nodes, edges, 500, matrix)[[1]]
 ```
 
-#### Application to a Weighted and Bipartite Graph
+## Application to a Weighted and Bipartite Graph
 
 We have a built-in dataset for POI visits to test the application in a weighted and bipartite graph. The data from the dataset is processed from SafeGraph with extra filters and coding to hide sensitive information. The dataset is meant to be educational and thus can be inaccurate for real implications. The nodes in the dataset are restaurants in Atlanta (set 1) and centroids of census block group (set 0). The edges in the dataset are visits from the census block group to restaurants. The weight of the edges represent the percentage of total visits coming from a particular census block group. You can call **POINodes (n=1356) and POIEdges (n=7926)** to directly access the sample dataset. The coordinates system is transformed with crs=26967 (unit meter). If you are using your own dataset, there should be a bipartite column that indicates which set the node is in. The set that would like have EdgeScan or NDScan values reported should be coded as 1, and 0 otherwise. In our **POINodes** sample dataset, restaurant POIs are coded as 1 and census block group centroids are coded as 0 in the bipartite network. Please reference the sample dataset if you are unclear of the input formats. 
 
@@ -187,7 +187,7 @@ temp = edgeScanKNearest(nodes, edges, 5, weighted=TRUE, bipartite=TRUE)
 heat = temp[[1]]
 edgeWithin = temp[[2]]
 ```
-#### Special notes to use edgeScanMatrix or NDScanMatrix 
+## Special notes to use edgeScanMatrix or NDScanMatrix 
 
 The input matrix for **edgeScanMatrix** or **NDScanMatrix** function needs to be a full matrix (i.e., the column and row includes all nodes). This is still true for bipartite networks and values are required even for nodes within the same set. For example, in a bipartite network, if you have 4 nodes and they are A1, A2, B1, B2, then your distance matrix should be 4 by 4 and self-pairs are coded as NA (see below). It is important to note that even though B1B2 (or B2B1) has no connections, they should still be given a distance value (=3) in the distance matrix. This is because number of edges and network density needs to know all the nodes within the distance threshold.  
 ``` r
@@ -253,7 +253,7 @@ edges = processEdge(NYCMafiaEdges, 'Source', 'Target')
 heat = edgeScanMatrix(nodes, edges, 1000, mat, min=3)
 ```
 
-#### Run time and optimization
+## Run time and optimization
 
 Note that, existing functions are not optimized for large-scale spatial social networks. As a benchmark, the application of **NDScanRadius** on **NYCMafiaNodes** (n=298) and **NYCMafiaEdges**(n=946) returns results in 0.5s, and the same function on **POINodes (n=1356)** and **POIEdges (n=7926)** returns results in 3m. The time increases exponentially with the size of the network. 
 
@@ -262,8 +262,8 @@ Among all the functions, **edgeScanMatrix** and **NDScanMatrix** functions are i
 #### Future Updates 
 This package is being developed under the NSF Career Grant: A Research and Educational Framework for Incorporating Spatial Heterogeneity into Social Network Analysis. More spatial social network metrics will be incorporated in the package in the near future.  
 
-#### Reference
-Liang, X., Baker, J., DellaPosta, D., & Andris, C. (2023). Is your neighbor your friend? Scan methods for spatial social network hotspot detection. *Transctions in GIS*. https://doi.org/10.1111/tgis.13050
+## Reference
+Liang, X., Baker, J., DellaPosta, D., & Andris, C. (2023). Is your neighbor your friend? Scan methods for spatial social network hotspot detection. *Transactions in GIS*. https://doi.org/10.1111/tgis.13050
 
 Andris, C., DellaPosta, D., Freelin, B. N., Zhu, X., Hinger, B., & Chen, H. (2021). To racketeer among neighbors: spatial features of criminal collaboration in the American Mafia. *International Journal of Geographical Information Science*, 35(12), 2463-2488.
 
