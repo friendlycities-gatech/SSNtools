@@ -653,7 +653,8 @@ Kfullfillment = function(nodes, edges, minK=1, bipartite=FALSE) {
     nodes2 <- nodes[sapply(nodes, function(node) node[['bipartite']] == 1)]
     #the following codes only loop through nodes in set 1
     result = lapply(nodes2, function(node) {
-      return(Kfullfillment_for_one_node(nodes2, edges, node, minK, bipartite))
+      #note that nodes need to be the full set of nodes
+      return(Kfullfillment_for_one_node(nodes, edges, node, minK, bipartite))
     })
     
     labels = lapply(nodes2, function(node) {

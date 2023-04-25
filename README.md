@@ -14,13 +14,12 @@ syntax.
   words, the algorithms return hotspots where nodes are not only densely
   located but also connected.
 
-- **K-fullfillment**: In network logistics, a fulfillment metric
-  indicates the extent to which a node’s capacity for supply has been
-  met (Li et al. 2019). In this package, this metric is defined as the
-  number of a node’s k-nearest neighbors that it is connected to. Here,
-  `k` is equal to the node’s degree. Nodes that are exclusively
-  connected to their nearest neighbors will have a k-fulfillment value
-  of 1.
+- **K-fullfillment**: A node-level metric to describe local
+  (dis)connection. It is defined as the percentage of a node’s K-nearest
+  neighbors that it is connected to over a node’s total number of
+  K-nearest neighbors. Here, `k` is equal to the node’s degree. Nodes
+  that are exclusively connected to their nearest neighbors will have a
+  k-fulfillment value of 1.
 
 - **Local network flattening ratio**: This metric (adapted from Sarkar
   et al. 2019) is defined as the ratio of a node’s minimized distance
