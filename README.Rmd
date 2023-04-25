@@ -139,9 +139,6 @@ heat = NDScanKNearest(nodes, edges, 10)[[1]]
 #-----calculates network density within a radius (500 meters - Manhattan distance) of each node in a network
 heat = NDScanManhattan(nodes, edges, 500)[[1]]
 
-#-----calculates network density within 500 unit of distance for each node in a network, given a user-defined distance matrix.  
-heat = NDScanMatrix(nodes, edges, 500, matrix)[[1]]
-
 #----calculate the density of edges within a radius (500 meters - Euclidean distance) of every node in a graph
 heat = edgeScanRadius(nodes, edges, 500)[[1]]
 
@@ -151,13 +148,17 @@ heat = edgeScanKNearest(nodes, edges, 10)[[1]]
 #-----calculates the density of edges within a radius (500 meters - Manhattan distance) of each node in a network
 heat = edgeScanManhattan(nodes, edges, 500)[[1]]
 
-#-----calculates the density of edges within (i.e., less than) 500 units of distance or travel time for each node in a network, given a user-defined distance or travel time matrix. The input matrix needs to be a full matrix with column and row names. For example, with three nodes, the matrix should look like the following, with diagnal coded as NA. Noted that 0 has a practical meaning of zero distance that is different from NA. 
+#-----calculates network density within (i.e., less than) 500 unit of distance for each node in a network, given a user-defined distance or travel time matrix. The input matrix needs to be a full matrix with column and row names. For example, with three nodes, the matrix should look like the following, with diagnal coded as NA. Noted that 0 has a practical meaning of zero distance that is different from NA. 
 
+#-----example matrix input
 #    A1 A2 A3
 # A1 NA 0  1
 # A2 0  NA 2
 # A3 1  2  NA
 
+heat = NDScanMatrix(nodes, edges, 500, matrix)[[1]]
+
+#-----calculates the number of edges within (i.e., less than) 500 units of distance or travel time for each node in a network, given a user-defined distance or travel time matrix.  
 heat = edgeScanMatrix(nodes, edges, 500, matrix)[[1]]
 ```
 
