@@ -1,24 +1,42 @@
 
-## Hotspot Detection for Spatial Social (Non-planar) Networks
+## Advanced Metrics for Analayzing Spatial Social (Non-planar) Networks
 
 **SSNtools** is an R package that provides metrics for analyzing and
-visualizing spatial social networks.
+visualizing spatial social networks. It is implemented with base R
+syntax.
 
-**SSNtools** is currently equipped with functions to calculate hotspots
-(i.e., heat) of spatial social networks. Traditional GIS hotspot
-detection methods (e.g. the Getis-Ord GI\* statistic or Ripley’s
-K-function) only apply to point patterns, and yet, clustered nodes in
-network may not be connected.
+**SSNtools** is currently equipped with three sets of functions:
 
-The goal for the current function of **SSNtools** is to detect the
-number of non-planar edges and the network density of a subset of a
-social network contained within a focal window. In another words, the
-algorithms return hotspots where nodes are not only densely located but
-also connected.
+- **EdgeScan** and **NDScan**: a series of functions to calculate
+  hotspots (i.e., heat) of spatial social networks. These functions
+  detect the number of non-planar edges and the network density of a
+  subset of a social network contained within a focal window. In another
+  words, the algorithms return hotspots where nodes are not only densely
+  located but also connected.
 
-See paper [Spatial Social Networks (SSN) Hot Spot Detection: Scan
-Methods for Non-planar Networks](https://arxiv.org/pdf/2011.07702.pdf)
-for detailed methodology.
+- **K-fullfillment**: In network logistics, a fulfillment metric
+  indicates the extent to which a node’s capacity for supply has been
+  met (Li et al. 2019). In this package, this metric is defined as the
+  number of a node’s k-nearest neighbors that it is connected to. Here,
+  `k` is equal to the node’s degree. Nodes that are exclusively
+  connected to their nearest neighbors will have a k-fulfillment value
+  of 1.
+
+- **Local network flattening ratio**: This metric (adapted from Sarkar
+  et al. 2019) is defined as the ratio of a node’s minimized distance
+  (`d_opt`) needed to connect to any k nearest neighbors to the total
+  actual distance (`d_act`) of its connections. Nodes with low values
+  prioritize distant connections.
+
+Please see the tutorial [Spatial Social Networks (SSN) Visualization and
+Metrics with
+R](https://friendlycities-gatech.github.io/SSN_tutorial/advanced-ssn-metrics.html)
+for more detailed usage demonstration. More advanced metrics will be
+implemented in the future.
+
+- [SSN Hostpots
+  Detection](https://friendlycities-gatech.github.io/SSN_tutorial/advanced-ssn-metrics.html#ssn-hotspots-detection)
+- [K-fullfillment](https://friendlycities-gatech.github.io/SSN_tutorial/advanced-ssn-metrics.html#k-fullfillment)
 
 #### Installation
 
@@ -59,18 +77,32 @@ data(NYCMafiaEdges)
 
 # ----process dataframe into a list of lists 
 # params:
-#     nodes - a R dataframe containing node label, longitude, and latitude
+#     data - a R dataframe containing node label, longitude, and latitude
 #     label_name - the name of the column for node label
 #     lon_name - the name of the column for node longitude 
 #     lat_name - the name of the column for node latitude
 #     bipartite_name - (optional) the name of the column that indicates the bipartite set of the nodes. The set of nodes that EdgeScan or NDScan should report on should be coded as 1 in the biparite column, and 0 otherwise.  
 nodes = processNode(NYCMafiaNodes, 'label', 'LonX', 'LatY')
 # params:
-#     edges - a R dataframe containing source node label and target node label
+#     data - a R dataframe containing source node label and target node label
 #     source_name - the name of the column for source node label
 #     target_name - the name of the column for target node label
 #     weight_name - (optional) the name of the column for edge weight 
 edges = processEdge(NYCMafiaEdges, 'Source', 'Target')
+
+#----calculate the density of edges within a radius (500 meters - Euclidean distance) of every node in a graph
+# params:
+#     nodes - a list of named lists. Each sublist contains a node.
+#     edges - a list of list. Each sublist contains an edge.
+#     radius - radius (in the coordinate unit) of the scanning window. 
+#     (optional) min - minimum number of points required to be in the search window. Default to 3.
+#     (optional) weighted - whether the result, number of edges, will be weighted (as sum of edge weights). Default to FALSE.
+#     (optional) bipartite - whether the result will be calculated as a bipartite network. Default to FALSE.
+# return:
+#     list(heat, edgeWithin) - a list of two dataframe for node and edge table. 
+heat = edgeScanRadius(nodes, edges, 500)
+heat = result[[1]]
+edgeWithin = result[[2]]
 
 #-----calculates network density within a radius (500 meters - Euclidean distance) of each node in a network
 # params:
@@ -78,10 +110,13 @@ edges = processEdge(NYCMafiaEdges, 'Source', 'Target')
 #     edges - a list of list. Each sublist contains an edge.
 #     radius - radius (in the coordinate unit) of the scanning window. 
 #     (optional) min - minimum number of points required to be in the search window. Default to 3.
+#     (optional) directed - whether the result, network density, will be calculated as a directed network. Default to FALSE.
+#     (optional) bipartite - whether the results will be calculated as a bipartite network. Default to FALSE.
 # return:
 #     list(heat, edgeWithin) - a list of two dataframe for node and edge table. 
-heat = NDScanRadius(nodes, edges, 500, 5)[[1]]
-edgeWithin = NDScanRadius(nodes, edges, 500, 5)[[2]]
+result = NDScanRadius(nodes, edges, 500)
+heat = result[[1]]
+edgeWithin = result[[2]]
 ```
 
 The first step `processNode()` and `processEdge()` converts R dataframe
@@ -323,3 +358,19 @@ This package is being developed under the NSF Career Grant: A Research
 and Educational Framework for Incorporating Spatial Heterogeneity into
 Social Network Analysis. More spatial social network metrics will be
 incorporated in the package in the near future.
+
+#### Reference
+
+Liang, X., Baker, J., DellaPosta, D., & Andris, C. (2023). Is your
+neighbor your friend? Scan methods for spatial social network hotspot
+detection. *Transctions in GIS*. <https://doi.org/10.1111/tgis.13050>
+
+Andris, C., DellaPosta, D., Freelin, B. N., Zhu, X., Hinger, B., & Chen,
+H. (2021). To racketeer among neighbors: spatial features of criminal
+collaboration in the American Mafia. *International Journal of
+Geographical Information Science*, 35(12), 2463-2488.
+
+Sarkar, D., Andris, C., Chapman, C. A., & Sengupta, R. (2019). Metrics
+for characterizing network structure and node importance in Spatial
+Social Networks. *International Journal of Geographical Information
+Science*, 33(5), 1017-1039.
