@@ -1,5 +1,5 @@
 
-## Advanced Metrics for Analayzing Spatial Social (Non-planar) Networks
+# Advanced Metrics for Analayzing Spatial Social (Non-planar) Networks
 
 **SSNtools** is an R package that provides metrics for analyzing and
 visualizing spatial social networks. It is implemented with base R
@@ -38,7 +38,7 @@ implemented in the future.
   Detection](https://friendlycities-gatech.github.io/SSN_tutorial/advanced-ssn-metrics.html#ssn-hotspots-detection)
 - [K-fullfillment](https://friendlycities-gatech.github.io/SSN_tutorial/advanced-ssn-metrics.html#k-fullfillment)
 
-#### Installation
+## Installation
 
 You can install the development version from GitHub with:
 
@@ -47,7 +47,7 @@ You can install the development version from GitHub with:
 devtools::install_github("friendlycities-gatech/SSNtools")
 ```
 
-#### Example
+## Example
 
 This is a basic example which shows you how to use the main functions of
 SSN hotspot detections in SSNtools. The package comes with an example
@@ -168,7 +168,7 @@ nodes[["AMAROSA-ALEXANDER"]]
 # [1] 57958.61
 ```
 
-#### Other Available Functions
+## Other Available Functions
 
 Currently available functions in SSNtools for SSN hotspot detection:
 
@@ -203,7 +203,7 @@ heat = NDScanMatrix(nodes, edges, 500, matrix)[[1]]
 heat = edgeScanMatrix(nodes, edges, 500, matrix)[[1]]
 ```
 
-#### Application to a Weighted and Bipartite Graph
+## Application to a Weighted and Bipartite Graph
 
 We have a built-in dataset for POI visits to test the application in a
 weighted and bipartite graph. The data from the dataset is processed
@@ -248,7 +248,7 @@ heat = temp[[1]]
 edgeWithin = temp[[2]]
 ```
 
-#### Special notes to use edgeScanMatrix or NDScanMatrix
+## Special notes to use edgeScanMatrix or NDScanMatrix
 
 The input matrix for **edgeScanMatrix** or **NDScanMatrix** function
 needs to be a full matrix (i.e., the column and row includes all nodes).
@@ -338,7 +338,7 @@ edges = processEdge(NYCMafiaEdges, 'Source', 'Target')
 heat = edgeScanMatrix(nodes, edges, 1000, mat, min=3)
 ```
 
-#### Run time and optimization
+## Run time and optimization
 
 Note that, existing functions are not optimized for large-scale spatial
 social networks. As a benchmark, the application of **NDScanRadius** on
@@ -360,7 +360,7 @@ and Educational Framework for Incorporating Spatial Heterogeneity into
 Social Network Analysis. More spatial social network metrics will be
 incorporated in the package in the near future.
 
-#### Reference
+## Reference
 
 Liang, X., Baker, J., DellaPosta, D., & Andris, C. (2023). Is your
 neighbor your friend? Scan methods for spatial social network hotspot
