@@ -31,27 +31,40 @@ processNode = function(data, label_name, lon_name, lat_name, bipartite_name = NA
   if(!is.na(bipartite_name)) {
     names(data)[names(data) == bipartite_name] <- "bipartite"
     data$bipartite = as.numeric(as.character(data$bipartite))
+    #order so that bipartite = 1 is on top
+    data = data[order(data$bipartite, decreasing=T),]
   }
   
   #convert data frame to a list of named lists
-  data2 = as.list(data)
-  nodes = list()
+  # Apply the process_row function to each row of the data frame
+  nodes <- lapply(split(data, seq(nrow(data))), processNodeHelper, bipartite_name)
   
-  for (i in 1:nrow(data)) { 
-    temp = list()
-    label = as.character(data2$label[i])
-    if(is.na(bipartite_name)) {
-      node = list('label' = label, 'lon' = data2$lon[i], 'lat'= data2$lat[i])
-    } else {
-      if(is.null(data2$bipartite[i])) {
-        stop('Node bipartite value is not available. Please check if node table contains bipartite values and if the name of the bipartite column is provided in the processNode function')
-      }
-      node = list('label' = label, 'lon' = data2$lon[i], 'lat'= data2$lat[i], 'bipartite' = data2$bipartite[i])
-    }
-    
-    temp[[label]] <- node #this is the only way to assign key by variable name
-    nodes = append(nodes, temp)
-  }
+  # Merge the lists using do.call
+  nodes <- do.call(c, nodes)
+  
+  # Remove the prefixes added by the split() function
+  names(nodes) <- gsub("^[0-9]+\\.", "", names(nodes))
+  
+  #old version with for loop
+  #convert data frame to a list of named lists
+  # data2 = as.list(data)
+  # nodes = list()
+  # 
+  # for (i in 1:nrow(data)) { 
+  #   temp = list()
+  #   label = as.character(data2$label[i])
+  #   if(is.na(bipartite_name)) {
+  #     node = list('label' = label, 'lon' = data2$lon[i], 'lat'= data2$lat[i])
+  #   } else {
+  #     if(is.null(data2$bipartite[i])) {
+  #       stop('Node bipartite value is not available. Please check if node table contains bipartite values and if the name of the bipartite column is provided in the processNode function')
+  #     }
+  #     node = list('label' = label, 'lon' = data2$lon[i], 'lat'= data2$lat[i], 'bipartite' = data2$bipartite[i])
+  #   }
+  #   
+  #   temp[[label]] <- node #this is the only way to assign key by variable name
+  #   nodes = append(nodes, temp)
+  # }
   return(nodes)
 }
 
@@ -73,22 +86,10 @@ processNode = function(data, label_name, lon_name, lat_name, bipartite_name = NA
 #' @rdname processEdge
 #' @export 
 processEdge = function(data, source_name, target_name, weight_name = NA) {
-  
-  data2 = as.list(data)
-  edges = list()
-  data2[[source_name]] = as.character(data2[[source_name]])
-  data2[[target_name]] = as.character(data2[[target_name]])
-  for (i in 1:nrow(data)) {
-    if(is.na(weight_name)) {
-      edge = list('Source' = data2[[source_name]][i], 'Target' = data2[[target_name]][i])
-    } else {
-      if(is.null(data2[[weight_name]][i])) {
-        stop('Edge weight is not available. Please check if edge table contains a weight column and if the name of the weight column is provided in the processEdge function')
-      }
-      edge = list('Source' = data2[[source_name]][i], 'Target' = data2[[target_name]][i], 'Weight' = data2[[weight_name]][i])
-    }
-    edges[[length(edges) + 1]] = edge
-  }
+  #convert columns to the right data format
+  names(data)[names(data) == source_name] <- "Source"
+  names(data)[names(data) == target_name] <- "Target"
+  edges <- lapply(split(data, seq_len(nrow(data))), processEdgeHelper, source_name, target_name, weight_name)
   return(edges)
 }
 
@@ -806,4 +807,93 @@ NDScanMatrix = function(nodes, edges, thres, matrix, min=3, directed=FALSE, bipa
 }
 
 
-
+#' @title K-fullfillment
+#' @description calculate K-fullfillment for nodes. K-fullfillment is defined as the number of a node’s k-nearest neighbors that it is connected to. k is equal to the node's degree. Nodes that are exclusively connected to their nearest neighbors will have a k-fulfillment value of 1
+#' @param nodes nodes of graph (a list of named lists)
+#' @param edges edges of graph (a list of lists)
+#' @param minK (optional) minimum k value (degree) for a node to have a meaningful K-fullfillment value. K=1 means the node only has one connection.
+#' @param bipartite (optional) boolean value of whether the data is a bipartite network
+#' @return a list of two dataframes. The first R dataframe contains a column of node label, and a column of K_fullfillment associated with the node. The second R dataframe contains the edge pairs and a boolean column indicating whether the source node is k-nearest neighbor to the target node and vice versa.
+#' @details DETAILS
+#' @examples 
+#' \dontrun{
+#' if(interactive()){
+#'  #EXAMPLE1
+#' }
+#' @rdname Kfullfillment
+#' @export 
+Kfullfillment = function(nodes, edges, minK=1, bipartite=FALSE) {
+  
+  if (bipartite) {
+    #if bipartite, filter nodes to those that are in set 1
+    nodes2 <- nodes[sapply(nodes, function(node) node[['bipartite']] == 1)]
+    #the following codes only loop through nodes in set 1
+    result = lapply(nodes2, function(node) {
+      return(Kfullfillment_for_one_node(nodes2, edges, node, minK, bipartite))
+    })
+    
+    labels = lapply(nodes2, function(node) {
+      return(node[['label']])
+    })
+    
+    k_values = unname(unlist(lapply(result, `[[`, "k")))
+    
+    # Add the 'k' attribute to each node
+    for (i in seq_along(nodes2)) {
+      nodes2[[i]]$k <- k_values[i]
+    }
+    # pre-compute KNN for each node to save running time
+    knn_list = lapply(nodes2, function(node) {
+      #note that nodes in nearestNeighbors need to be unfiltered! 
+      names(nearestNeighbors(nodes, node, node[['k']], bipartite))
+    })
+    names(knn_list) <- names(nodes2)
+    
+    #if bipartite, only need to check if Target is a k-nearest neighbor of the 'Source'
+    edge_table = lapply(edges, function(edge) {
+      source_knn = knn_list[[edge[['Source']]]]
+      is_k_nearest_neighbor = as.integer(edge[['Target']] %in% source_knn)
+      return(list(Source = edge[['Source']], Target = edge[['Target']], is_k_nearest_neighbor = is_k_nearest_neighbor))
+    })
+    
+  } else {
+    #no need for nodes2 and filtering
+    result = lapply(nodes, function(node) {
+      return(Kfullfillment_for_one_node(nodes, edges, node, minK, bipartite))
+    })
+    
+    labels = lapply(nodes, function(node) {
+      return(node[['label']])
+    })
+    
+    k_values = unname(unlist(lapply(result, `[[`, "k")))
+    
+    # Add the 'k' attribute to each node
+    for (i in seq_along(nodes)) {
+      nodes[[i]]$k <- k_values[i]
+    }
+    # pre-compute KNN for each node to save running time
+    knn_list = lapply(nodes, function(node) {
+      names(nearestNeighbors(nodes, node, node[['k']], bipartite))
+    })
+    names(knn_list) <- names(nodes)
+    
+    # The edge_table is created by iterating over each edge in the edges list and 
+    # checking if the 'Source' node is a k-nearest neighbor of the 'Target' 
+    # node or vice versa. If yes, the KNearestNeighbor value is set to 1; 
+    # otherwise, it's set to 0.
+    edge_table = lapply(edges, function(edge) {
+      source_knn = knn_list[[edge[['Source']]]]
+      target_knn = knn_list[[edge[['Target']]]]
+      is_k_nearest_neighbor = as.integer(edge[['Target']] %in% source_knn | edge[['Source']] %in% target_knn)
+      return(list(Source = edge[['Source']], Target = edge[['Target']], is_k_nearest_neighbor = is_k_nearest_neighbor))
+    })
+  }
+  
+  node_table = data.frame('label' = unname(unlist(labels)), 'k' = k_values, 
+                          'K_fullfillment' = unname(unlist(lapply(result, `[[`, "kf"))))
+  
+  edge_table = do.call(rbind.data.frame, edge_table)
+  
+  return(list(node_table, edge_table))
+}

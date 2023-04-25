@@ -2,6 +2,36 @@
 #-----------Utility Methods ---------------#
 #------------------------------------------#
 
+#Helper function to convert processNode from for loop to lapply
+processNodeHelper = function(row, bipartite_name) {
+  temp <- list()
+  label <- as.character(row$label)
+  
+  if (is.na(bipartite_name)) {
+    node <- list('label' = label, 'lon' = row$lon, 'lat' = row$lat)
+  } else {
+    if (is.null(row$bipartite)) {
+      stop('Node bipartite value is not available. Please check if the node table contains bipartite values and if the name of the bipartite column is provided in the processNode function')
+    }
+    node <- list('label' = label, 'lon' = row$lon, 'lat' = row$lat, 'bipartite' = row$bipartite)
+  }
+  
+  return(setNames(list(node), label))
+}
+
+#Helper function to convert processNode from for loop to lapply
+processEdgeHelper <- function(row, source_name, target_name, weight_name) {
+  if (is.na(weight_name)) {
+    edge <- list('Source' = as.character(row[[source_name]]), 'Target' = as.character(row[[target_name]]))
+  } else {
+    if (is.null(row[[weight_name]])) {
+      stop('Edge weight is not available. Please check if edge table contains a weight column and if the name of the weight column is provided in the processEdge function')
+    }
+    edge <- list('Source' = as.character(row[[source_name]]), 'Target' = as.character(row[[target_name]]), 'Weight' = row[[weight_name]])
+  }
+  return(edge)
+}
+
 #Get number of nodes within manhattan distance of source node
 numberNodesWithinManhattanDistance = function(nodes, source, distance, bipartite) {
   retValue = 0
@@ -51,6 +81,7 @@ getNodesInManhattanDistance = function (nodes, source, distance) {
 }
 
 #Get the list of edges within manhattan distance of source node
+# ---- UNUSED ------ #
 getEdgesInManhattanDistance = function(nodes, edges, source, distance) {
   retList = c()
   for (edge in edges) {
@@ -101,7 +132,7 @@ calculateMidpoint = function(edge, nodes) {
 }
 
 #for KNN only
-#Get a certain number of the nearest neighbor hodes to a source node (can suggest increasing the number if numNeighbors > number)
+#Get a certain number of the nearest neighbor nodes to a source node (can suggest increasing the number if numNeighbors > number)
 nearestNeighbors = function(nodes, source, number, bipartite) {
   neighbors = list() #a particular structure to store tibble nodes #dict does not accept tibble as the key
   distance_dict = {}
@@ -139,6 +170,7 @@ nearestNeighbors = function(nodes, source, number, bipartite) {
 }
 
 #Get the nearest neighbor to a source node that is not in the visited list
+# --- UNUSED ------#
 nearestUnvisitedNeighbor = function(nodes, visited, source, bipartite) {
   minNode = NULL
   minDistance = -1
@@ -167,6 +199,7 @@ nearestUnvisitedNeighbor = function(nodes, visited, source, bipartite) {
 }
 
 #Get all the nodes within a certain radius of a source node
+# ---- UNUSED -----#
 nodesWithinRadius = function(nodes, source, radius) {
   retNodes = list()
   for (node in nodes) {
@@ -196,6 +229,16 @@ numberNodesWithinRadius = function(nodes, source, radius, bipartite) {
   }
   return (numNodes)
 }
+
+# numberNodesWithinRadius <- function(nodes, source, radius, bipartite) {
+#   distances <- sapply(nodes, function(node) euclidDistance(source, node))
+#   if (bipartite) {
+#     numNodes <- sum(sapply(nodes, function(node) node[['bipartite']] == 0) & distances <= radius)
+#   } else {
+#     numNodes <- sum(distances <= radius)
+#   }
+#   return(numNodes)
+# }
 
 #Tests if an edge is fully within a radius of a given node
 testEdgeInRange = function(nodes, edge, node, radius) {
@@ -346,4 +389,44 @@ getNumEdgesInMatrix = function(node_label, names, edges, matrix, thres, weighted
     }
   }
   return (retVal)
+}
+
+#helper function for Kfullfillment()
+Kfullfillment_for_one_node = function(nodes, edges, node, minK=1, bipartite=FALSE) {
+  if(bipartite) {
+    matching_edges = lapply(edges, function(edge) {
+      if(edge[['Source']] == node[['label']]) {
+        return(edge[c(1,2)])
+      } else {
+        return(NULL)
+      }
+    })
+  } else {
+    matching_edges = lapply(edges, function(edge) {
+      if(edge[['Source']] == node[['label']] | edge[['Target']] == node[['label']]) {
+        return(edge[c(1,2)])
+      } else {
+        return(NULL)
+      }
+    })
+  }
+  
+  #calculate degree
+  matching_edges <- Filter(Negate(is.null), matching_edges)
+  degree = length(matching_edges)
+  if (degree >= minK) {
+    #find all nodes connected
+    connected_nodes = unlist(matching_edges)
+    connected_nodes[connected_nodes != node[['label']]]
+    
+    #find k-nearest neighbors
+    knn = names(nearestNeighbors(nodes, node, degree, bipartite))
+    
+    #calculate k-fullfillment: number of nodes connected that are also the k-nearest neighbor vs. degree
+    kf = length(intersect(connected_nodes, knn))/degree
+  } else {
+    kf = NA
+  }
+  node[['k']] = degree
+  return(list(kf = kf, k=degree))
 }
