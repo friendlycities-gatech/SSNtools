@@ -54,16 +54,33 @@ nodes = processNode(NYCMafiaNodes, 'label', 'LonX', 'LatY')
 #     weight_name - (optional) the name of the column for edge weight 
 edges = processEdge(NYCMafiaEdges, 'Source', 'Target')
 
+#----calculate the density of edges within a radius (500 meters - Euclidean distance) of every node in a graph
+# params:
+#     nodes - a list of named lists. Each sublist contains a node.
+#     edges - a list of list. Each sublist contains an edge.
+#     radius - radius (in the coordinate unit) of the scanning window. 
+#     (optional) min - minimum number of points required to be in the search window. Default to 3.
+#     (optional) weighted - whether the result, number of edges, will be weighted (as sum of edge weights). Default to FALSE.
+#     (optional) bipartite - whether the result will be calculated as a bipartite network. Default to FALSE.
+# return:
+#     list(heat, edgeWithin) - a list of two dataframe for node and edge table. 
+heat = edgeScanRadius(nodes, edges, 500)
+heat = result[[1]]
+edgeWithin = result[[2]]
+
 #-----calculates network density within a radius (500 meters - Euclidean distance) of each node in a network
 # params:
 #     nodes - a list of named lists. Each sublist contains a node.
 #     edges - a list of list. Each sublist contains an edge.
 #     radius - radius (in the coordinate unit) of the scanning window. 
 #     (optional) min - minimum number of points required to be in the search window. Default to 3.
+#     (optional) directed - whether the result, network density, will be calculated as a directed network. Default to FALSE.
+#     (optional) bipartite - whether the results will be calculated as a bipartite network. Default to FALSE.
 # return:
 #     list(heat, edgeWithin) - a list of two dataframe for node and edge table. 
-heat = NDScanRadius(nodes, edges, 500, 5)[[1]]
-edgeWithin = NDScanRadius(nodes, edges, 500, 5)[[2]]
+result = NDScanRadius(nodes, edges, 500)
+heat = result[[1]]
+edgeWithin = result[[2]]
 ```
 
 The first step `processNode()` and `processEdge()` converts R dataframe data to a list of named lists. If you are familiar with Python, this output format resembles object-oriented programming. You can read and modify data like the following: 
