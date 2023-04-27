@@ -62,7 +62,7 @@ test_that("the total heat in edgeScanRadius outout is the same as 353", {
 })
 
 test_that("the total heat in NDScanRadius output is the same as 14", {
-  expect_equal(round(sum(result2[[1]]$heat, na.rm = T), 0), 14) 
+  expect_equal(round(sum(result2[[1]]$heat, na.rm = T), 0), 14)
 })
 
 test_that("the total K_fullfillment in Kfullfillment output is the same as 26", {
@@ -70,7 +70,7 @@ test_that("the total K_fullfillment in Kfullfillment output is the same as 26", 
 })
 
 test_that("the sum is_k_nearest_neighbor in Kfullfillment output is the same as 142", {
-  expect_equal(round(sum(result7[[2]]$is_k_nearest_neighbor, na.rm = T), 0), 142) 
+  expect_equal(round(sum(result7[[2]]$is_K_nearest_neighbor, na.rm = T), 0), 142) 
 })
 # test_that("the number rows in edgeScanMatrix outout is the same as the length of nodes", {
 #   expect_equal(length(nodes),nrow(result7))

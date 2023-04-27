@@ -392,7 +392,17 @@ getNumEdgesInMatrix = function(node_label, names, edges, matrix, thres, weighted
 }
 
 #helper function for Kfullfillment()
-Kfullfillment_for_one_node = function(nodes, edges, node, minK=1, bipartite=FALSE) {
+Kfullfillment_for_one_node = function(node, minK=1, bipartite=FALSE) {
+  if (node[['K']] >= minK) {
+    #calculate k-fullfillment: number of nodes connected that are also the k-nearest neighbor vs. degree
+    kf = length(intersect(node[['connected_nodes']], node[['Knn']]))/node[['K']]
+  } else {
+    kf = NA
+  }
+  return(kf)
+}
+
+Add_K_connected_nodes_knn_to_node = function(nodes, edges, node, bipartite) {
   if(bipartite) {
     matching_edges = lapply(edges, function(edge) {
       if(edge[['Source']] == node[['label']]) {
@@ -414,19 +424,17 @@ Kfullfillment_for_one_node = function(nodes, edges, node, minK=1, bipartite=FALS
   #calculate degree
   matching_edges <- Filter(Negate(is.null), matching_edges)
   degree = length(matching_edges)
-  if (degree >= minK) {
-    #find all nodes connected
-    connected_nodes = unlist(matching_edges)
-    connected_nodes[connected_nodes != node[['label']]]
-    
-    #find k-nearest neighbors
-    knn = names(nearestNeighbors(nodes, node, degree, bipartite))
-    
-    #calculate k-fullfillment: number of nodes connected that are also the k-nearest neighbor vs. degree
-    kf = length(intersect(connected_nodes, knn))/degree
-  } else {
-    kf = NA
-  }
-  node[['k']] = degree
-  return(list(kf = kf, k=degree))
+  
+  #find all nodes connected
+  connected_nodes = unlist(matching_edges)
+  connected_nodes[connected_nodes != node[['label']]]
+  
+  #find k-nearest neighbors
+  knn = names(nearestNeighbors(nodes, node, degree, bipartite))
+  
+  node[['K']] <- degree
+  node[['Knn']] <- knn
+  node[['connected_nodes']] <- unname(connected_nodes)
+  
+  return(node)
 }

@@ -650,73 +650,51 @@ Kfullfillment = function(nodes, edges, minK=1, bipartite=FALSE) {
   
   if (bipartite) {
     #if bipartite, filter nodes to those that are in set 1
-    nodes2 <- nodes[sapply(nodes, function(node) node[['bipartite']] == 1)]
-    #the following codes only loop through nodes in set 1
-    result = lapply(nodes2, function(node) {
-      #note that nodes need to be the full set of nodes
-      return(Kfullfillment_for_one_node(nodes, edges, node, minK, bipartite))
+    nodes2 = nodes[sapply(nodes, function(node) node[['bipartite']] == 1)]
+  } else {
+    nodes2 = nodes
+  }
+  
+  # add degree, connected_nodes, and Knn as attributes to each node
+  nodes2 = lapply(nodes2, function(node) {
+    return(Add_K_connected_nodes_knn_to_node(nodes, edges, node, bipartite))
     })
-    
-    labels = lapply(nodes2, function(node) {
-      return(node[['label']])
-    })
-    
-    k_values = unname(unlist(lapply(result, `[[`, "k")))
-    
-    # Add the 'k' attribute to each node
-    for (i in seq_along(nodes2)) {
-      nodes2[[i]]$k <- k_values[i]
-    }
-    # pre-compute KNN for each node to save running time
-    knn_list = lapply(nodes2, function(node) {
-      #note that nodes in nearestNeighbors need to be unfiltered! 
-      names(nearestNeighbors(nodes, node, node[['k']], bipartite))
-    })
-    names(knn_list) <- names(nodes2)
-    
+  
+  # create K-fullfillment values
+  kf = lapply(nodes2, function(node) {
+    return(Kfullfillment_for_one_node(node, minK, bipartite))
+  })
+  
+  if (bipartite) {
     #if bipartite, only need to check if Target is a k-nearest neighbor of the 'Source'
     edge_table = lapply(edges, function(edge) {
-      source_knn = knn_list[[edge[['Source']]]]
+      source_knn = nodes2[[edge[['Source']]]][['Knn']]
       is_K_nearest_neighbor = as.integer(edge[['Target']] %in% source_knn)
       return(list(Source = edge[['Source']], Target = edge[['Target']], is_K_nearest_neighbor = is_K_nearest_neighbor))
     })
-    
   } else {
-    #no need for nodes2 and filtering
-    result = lapply(nodes, function(node) {
-      return(Kfullfillment_for_one_node(nodes, edges, node, minK, bipartite))
-    })
-    
-    labels = lapply(nodes, function(node) {
-      return(node[['label']])
-    })
-    
-    k_values = unname(unlist(lapply(result, `[[`, "k")))
-    
-    # Add the 'k' attribute to each node
-    for (i in seq_along(nodes)) {
-      nodes[[i]]$k <- k_values[i]
-    }
-    # pre-compute KNN for each node to save running time
-    knn_list = lapply(nodes, function(node) {
-      names(nearestNeighbors(nodes, node, node[['k']], bipartite))
-    })
-    names(knn_list) <- names(nodes)
-    
     # The edge_table is created by iterating over each edge in the edges list and 
     # checking if the 'Source' node is a k-nearest neighbor of the 'Target' 
     # node or vice versa. If yes, the KNearestNeighbor value is set to 1; 
     # otherwise, it's set to 0.
     edge_table = lapply(edges, function(edge) {
-      source_knn = knn_list[[edge[['Source']]]]
-      target_knn = knn_list[[edge[['Target']]]]
+      source_knn = nodes2[[edge[['Source']]]][['Knn']]
+      target_knn = nodes2[[edge[['Target']]]][['Knn']]
       is_K_nearest_neighbor = as.integer(edge[['Target']] %in% source_knn | edge[['Source']] %in% target_knn)
       return(list(Source = edge[['Source']], Target = edge[['Target']], is_K_nearest_neighbor = is_K_nearest_neighbor))
     })
   }
   
-  node_table = data.frame('label' = unname(unlist(labels)), 'K' = k_values, 
-                          'K_fullfillment' = unname(unlist(lapply(result, `[[`, "kf"))))
+  labels = lapply(nodes2, function(node) {
+    return(node[['label']])
+  })
+  
+  k_values = lapply(nodes2, function(node) {
+    return(node[['K']])
+  })
+  
+  node_table = data.frame('label' = unname(unlist(labels)), 'K' = unname(unlist(k_values)), 
+                          'K_fullfillment' = unname(unlist(kf)))
   
   edge_table = do.call(rbind.data.frame, edge_table)
   
