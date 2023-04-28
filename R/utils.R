@@ -134,40 +134,62 @@ calculateMidpoint = function(edge, nodes) {
 #for KNN only
 #Get a certain number of the nearest neighbor nodes to a source node (can suggest increasing the number if numNeighbors > number)
 nearestNeighbors = function(nodes, source, number, bipartite) {
-  neighbors = list() #a particular structure to store tibble nodes #dict does not accept tibble as the key
-  distance_dict = {}
-  numNeighbors = 0
-  
-  for (node in nodes) {
-    if(is.null(node[['bipartite']])) {z = 100} else {z = node[['bipartite']]}
-    if((bipartite & z == 0) | !bipartite)  {
-      label = node[['label']]
-      if (node[['label']] != source[['label']]) {
-        distance = euclidDistance(source, node)
-        if (numNeighbors < number) {
-          temp = list()
-          temp[[label]] <- node
-          neighbors = append(neighbors, temp)
-          distance_dict[label] = distance
-          numNeighbors = numNeighbors + 1
-        } else {
-          for (neighbor in neighbors) {
-            neigh_label = neighbor[['label']]
-            if (distance < distance_dict[neigh_label]) {
-              neighbors = neighbors[names(neighbors) != neigh_label]
-              temp = list()
-              temp[[label]] <- node
-              neighbors = append(neighbors, temp)
-              distance_dict[label] = distance
-              break 
-            }
-          }
-        }
-      }
-    }
+  if(bipartite) {
+    #only search neighbors in nodes where bipartite == 0
+    nodes2 = nodes[sapply(nodes, function(node) node[['bipartite']] == 0)]
+  } else {
+    nodes2 = nodes
   }
-  return(neighbors) #a list of named lists
+  
+  distances = lapply(nodes2, function(node) {
+    if(node[['label']] != source[['label']]) {
+      return(euclidDistance(source, node))
+    } else {
+      return(NULL)
+    }
+  })
+  distances = Filter(Negate(is.null), distances)
+  
+  order_idx = order(unlist(distances), decreasing = FALSE)
+  neighbors = names(distances[order_idx[1:number]])
+  neighbors_lst = sapply(neighbors, function(name) {nodes[[name]]}, simplify = FALSE)
+  return(neighbors_lst)
 }
+# nearestNeighbors = function(nodes, source, number, bipartite) {
+#   neighbors = list() #a particular structure to store tibble nodes #dict does not accept tibble as the key
+#   distance_dict = {}
+#   numNeighbors = 0
+#   
+#   for (node in nodes) {
+#     if(is.null(node[['bipartite']])) {z = 100} else {z = node[['bipartite']]}
+#     if((bipartite & z == 0) | !bipartite)  {
+#       label = node[['label']]
+#       if (node[['label']] != source[['label']]) {
+#         distance = euclidDistance(source, node)
+#         if (numNeighbors < number) {
+#           temp = list()
+#           temp[[label]] <- node
+#           neighbors = append(neighbors, temp)
+#           distance_dict[label] = distance
+#           numNeighbors = numNeighbors + 1
+#         } else {
+#           for (neighbor in neighbors) {
+#             neigh_label = neighbor[['label']]
+#             if (distance < distance_dict[neigh_label]) {
+#               neighbors = neighbors[names(neighbors) != neigh_label]
+#               temp = list()
+#               temp[[label]] <- node
+#               neighbors = append(neighbors, temp)
+#               distance_dict[label] = distance
+#               break 
+#             }
+#           }
+#         }
+#       }
+#     }
+#   }
+#   return(neighbors) #a list of named lists
+# }
 
 #Get the nearest neighbor to a source node that is not in the visited list
 # --- UNUSED ------#
@@ -229,16 +251,6 @@ numberNodesWithinRadius = function(nodes, source, radius, bipartite) {
   }
   return (numNodes)
 }
-
-# numberNodesWithinRadius <- function(nodes, source, radius, bipartite) {
-#   distances <- sapply(nodes, function(node) euclidDistance(source, node))
-#   if (bipartite) {
-#     numNodes <- sum(sapply(nodes, function(node) node[['bipartite']] == 0) & distances <= radius)
-#   } else {
-#     numNodes <- sum(distances <= radius)
-#   }
-#   return(numNodes)
-# }
 
 #Tests if an edge is fully within a radius of a given node
 testEdgeInRange = function(nodes, edge, node, radius) {
@@ -402,6 +414,7 @@ Kfullfillment_for_one_node = function(node, minK=1, bipartite=FALSE) {
   return(kf)
 }
 
+#K (node's degree), connected nodes, and Knn to a node's attributes
 Add_K_connected_nodes_knn_to_node = function(nodes, edges, node, bipartite) {
   if(bipartite) {
     matching_edges = lapply(edges, function(edge) {
@@ -426,15 +439,37 @@ Add_K_connected_nodes_knn_to_node = function(nodes, edges, node, bipartite) {
   degree = length(matching_edges)
   
   #find all nodes connected
-  connected_nodes = unlist(matching_edges)
-  connected_nodes[connected_nodes != node[['label']]]
+  connected_nodes = unname(unlist(matching_edges))
+  connected_nodes = connected_nodes[connected_nodes != node[['label']]]
   
   #find k-nearest neighbors
   knn = names(nearestNeighbors(nodes, node, degree, bipartite))
   
   node[['K']] <- degree
   node[['Knn']] <- knn
-  node[['connected_nodes']] <- unname(connected_nodes)
+  node[['connected_nodes']] <- connected_nodes
   
   return(node)
+}
+
+# calculate local flattening ratio for one node
+LocalFlatteningRatio_for_one_node = function(nodes, node, minK, bipartite) {
+  if (node[['K']] >= minK) {
+    #return a list of distance between node and its K-nearest neighbors 
+    Knn_dist_lst = lapply(node[['Knn']], function(node_label) {
+      return(euclidDistance(node, nodes[[node_label]]))
+    })
+    #calculate the node's minimized/optimized distance 
+    d_opt = sum(unlist(Knn_dist_lst))
+    #return a list of distance between node and its K-nearest neighbors 
+    connected_nodes_dist_list = lapply(node[['connected_nodes']], function(node_label) {
+      return(euclidDistance(node, nodes[[node_label]]))
+    })
+    #calculate the node's total actual distance of its connections 
+    d_act = sum(unlist(connected_nodes_dist_list))
+    fr = d_opt/d_act
+  } else {
+    fr = NA
+  }
+  return(fr)
 }

@@ -46,6 +46,7 @@ result4 = NDScanManhattan(nodes, edges, 500)
 result5 = edgeScanKNearest(nodes, edges, 10)
 result6 = edgeScanManhattan(nodes, edges, 500)
 result7 = Kfullfillment(nodes, edges)
+result8 = LocalFlatteningRatio(nodes, edges)
 
 test_that("the number of nodes in output is as expected", {
   expect_equal(length(nodes),nrow(result[[1]]))
@@ -55,6 +56,7 @@ test_that("the number of nodes in output is as expected", {
   expect_equal(length(nodes),nrow(result5[[1]]))
   expect_equal(length(nodes),nrow(result6[[1]]))
   expect_equal(length(nodes),nrow(result7[[1]]))
+  expect_equal(length(nodes),nrow(result8[[1]]))
 })
 
 test_that("the total heat in edgeScanRadius outout is the same as 353", {
@@ -72,6 +74,11 @@ test_that("the total K_fullfillment in Kfullfillment output is the same as 26", 
 test_that("the sum is_k_nearest_neighbor in Kfullfillment output is the same as 142", {
   expect_equal(round(sum(result7[[2]]$is_K_nearest_neighbor, na.rm = T), 0), 142) 
 })
+
+test_that("the total Local_flattening_ratio in LocalFlatteningRatio output is the same as 41", {
+  expect_equal(round(sum(result8[[1]]$Local_flattening_ratio, na.rm = T), 0), 41) 
+})
+
 # test_that("the number rows in edgeScanMatrix outout is the same as the length of nodes", {
 #   expect_equal(length(nodes),nrow(result7))
 # })
@@ -86,6 +93,7 @@ result4 <- NDScanManhattan(nodes, edges, 1000, directed=FALSE, bipartite=TRUE)
 result5 <- edgeScanKNearest(nodes, edges, 3, weighted=TRUE, bipartite=TRUE)
 result6 <- edgeScanManhattan(nodes, edges, 1000, weighted=TRUE, bipartite=TRUE)
 result7 <- Kfullfillment(nodes, edges, minK=1, bipartite=TRUE)
+result8 <- LocalFlatteningRatio(nodes, edges, minK=1, bipartite=TRUE)
 
 test_that("the number of nodes in output is as expected", {
   expect_equal(1045,nrow(result[[1]]))
@@ -95,6 +103,7 @@ test_that("the number of nodes in output is as expected", {
   expect_equal(1045,nrow(result5[[1]]))
   expect_equal(1045,nrow(result6[[1]]))
   expect_equal(1045,nrow(result7[[1]]))
+  expect_equal(1045,nrow(result8[[1]]))
 })
 
 test_that("the number of edges in output is as expected", {
@@ -105,6 +114,7 @@ test_that("the number of edges in output is as expected", {
   expect_equal(length(edges),nrow(result5[[2]]))
   expect_equal(length(edges),nrow(result6[[2]]))
   expect_equal(length(edges),nrow(result7[[2]]))
+  expect_equal(length(edges),nrow(result8[[2]]))
 })
 
 

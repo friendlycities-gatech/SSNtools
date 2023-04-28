@@ -876,3 +876,72 @@ Kfullfillment = function(nodes, edges, minK=1, bipartite=FALSE) {
   
   return(list(node_table, edge_table))
 }
+
+#' @title Local Network Flattening Ration 
+#' @description calculate local network flattening ratio for nodes. K-fullfillment is defined as defined as the ratio of a node’s minimized distance (d_opt) needed to connect to any k nearest neighbors to the total actual distance (d_act) of its connections. Nodes with low values prioritize distant connections. 
+#' @param nodes nodes of graph (a list of named lists)
+#' @param edges edges of graph (a list of lists)
+#' @param minK (optional) minimum k value (degree) for a node to have a meaningful K-fullfillment value. K=1 means the node only has one connection.
+#' @param bipartite (optional) boolean value of whether the data is a bipartite network
+#' @return a list of two dataframes. The first R dataframe contains a column of node label, and a column of Local_flattening_ratio associated with the node. The second R dataframe contains the edge pairs and a boolean column indicating whether the source node is k-nearest neighbor to the target node and vice versa.
+#' @details DETAILS
+#' @examples 
+#' \dontrun{
+#' if(interactive()){
+#'  #EXAMPLE1
+#' }
+#' @rdname LocalFlatteningRatio
+#' @export 
+LocalFlatteningRatio = function(nodes, edges, minK=1, bipartite=FALSE) {
+  if (bipartite) {
+    #if bipartite, filter nodes to those that are in set 1
+    nodes2 = nodes[sapply(nodes, function(node) node[['bipartite']] == 1)]
+  } else {
+    nodes2 = nodes
+  }
+  
+  # add degree, connected_nodes, and Knn as attributes to each node
+  nodes2 = lapply(nodes2, function(node) {
+    return(Add_K_connected_nodes_knn_to_node(nodes, edges, node, bipartite))
+  })
+  
+  # create Local Flattening Ratio values
+  lfr = lapply(nodes2, function(node) {
+    return(LocalFlatteningRatio_for_one_node(nodes, node, minK, bipartite))
+  })
+  
+  if (bipartite) {
+    #if bipartite, only need to check if Target is a k-nearest neighbor of the 'Source'
+    edge_table = lapply(edges, function(edge) {
+      source_knn = nodes2[[edge[['Source']]]][['Knn']]
+      is_K_nearest_neighbor = as.integer(edge[['Target']] %in% source_knn)
+      return(list(Source = edge[['Source']], Target = edge[['Target']], is_K_nearest_neighbor = is_K_nearest_neighbor))
+    })
+  } else {
+    # The edge_table is created by iterating over each edge in the edges list and 
+    # checking if the 'Source' node is a k-nearest neighbor of the 'Target' 
+    # node or vice versa. If yes, the KNearestNeighbor value is set to 1; 
+    # otherwise, it's set to 0.
+    edge_table = lapply(edges, function(edge) {
+      source_knn = nodes2[[edge[['Source']]]][['Knn']]
+      target_knn = nodes2[[edge[['Target']]]][['Knn']]
+      is_K_nearest_neighbor = as.integer(edge[['Target']] %in% source_knn | edge[['Source']] %in% target_knn)
+      return(list(Source = edge[['Source']], Target = edge[['Target']], is_K_nearest_neighbor = is_K_nearest_neighbor))
+    })
+  }
+  
+  labels = lapply(nodes2, function(node) {
+    return(node[['label']])
+  })
+  
+  k_values = lapply(nodes2, function(node) {
+    return(node[['K']])
+  })
+  
+  node_table = data.frame('label' = unname(unlist(labels)), 'K' = unname(unlist(k_values)), 
+                          'Local_flattening_ratio' = unname(unlist(lfr)))
+  
+  edge_table = do.call(rbind.data.frame, edge_table)
+  
+  return(list(node_table, edge_table))
+}
