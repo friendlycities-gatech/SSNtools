@@ -67,12 +67,12 @@ test_that("the total heat in NDScanRadius output is the same as 14", {
   expect_equal(round(sum(result2[[1]]$heat, na.rm = T), 0), 14)
 })
 
-test_that("the total K_fullfillment in Kfullfillment output is the same as 26", {
-  expect_equal(round(sum(result7[[1]]$K_fullfillment, na.rm = T), 0), 26) 
+test_that("the total K_fullfillment in Kfullfillment output is the same as 27", {
+  expect_equal(round(sum(result7[[1]]$K_fullfillment, na.rm = T), 0), 27) 
 })
 
-test_that("the sum is_k_nearest_neighbor in Kfullfillment output is the same as 142", {
-  expect_equal(round(sum(result7[[2]]$is_K_nearest_neighbor, na.rm = T), 0), 142) 
+test_that("the sum is_K_nearest_neighbor in Kfullfillment output is the same as 149", {
+  expect_equal(round(sum(result7[[2]]$is_K_nearest_neighbor, na.rm = T), 0), 149) 
 })
 
 test_that("the total Local_flattening_ratio in LocalFlatteningRatio output is the same as 41", {
