@@ -33,3 +33,9 @@ POIEdges <- read.csv(here::here("data-raw", "POIEdges.csv"))
 usethis::use_data(POINodes, overwrite = TRUE)
 usethis::use_data(POIEdges, overwrite = TRUE)
 
+EmergencyNodes <- read.csv(here::here("data-raw", "EmergencyNodes.csv"))
+EmergencyEdges <- read.csv(here::here("data-raw", "EmergencyEdges.csv"))
+
+usethis::use_data(EmergencyNodes, overwrite = TRUE)
+usethis::use_data(EmergencyEdges, overwrite = TRUE)
+
