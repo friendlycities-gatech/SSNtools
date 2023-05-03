@@ -12,6 +12,9 @@ data('POIEdges')
 data("NYCMafiaNodes")
 data("NYCMafiaEdges")
 
+data("EmergencyNodes")
+data("EmergencyEdges")
+
 test_that("MafiaNodes loaded successfully", {
   expect_equal(nrow(MafiaNodes), 680)
 })
@@ -36,6 +39,14 @@ test_that("POIEdges loaded successfully", {
   expect_equal(nrow(POIEdges), 7926)
 })
 
+test_that("EmergencyNodes loaded successfully", {
+  expect_equal(nrow(EmergencyNodes), 1582)
+})
+
+test_that("EmergencyEdges loaded successfully", {
+  expect_equal(nrow(EmergencyEdges), 47)
+})
+
 nodes <- processNode(NYCMafiaNodes, 'label', 'LonX', 'LatY')
 edges <- processEdge(NYCMafiaEdges, 'Source', 'Target')
 
@@ -47,6 +58,8 @@ result5 = edgeScanKNearest(nodes, edges, 10)
 result6 = edgeScanManhattan(nodes, edges, 500)
 result7 = Kfullfillment(nodes, edges)
 result8 = LocalFlatteningRatio(nodes, edges)
+set.seed(1234, "Mersenne-Twister", sample.kind="Rounding")
+result9 = GlobalFlatteningRatio(nodes, edges, 100)
 
 test_that("the number of nodes in output is as expected", {
   expect_equal(length(nodes),nrow(result[[1]]))
@@ -77,6 +90,10 @@ test_that("the sum is_K_nearest_neighbor in Kfullfillment output is the same as 
 
 test_that("the total Local_flattening_ratio in LocalFlatteningRatio output is the same as 41", {
   expect_equal(round(sum(result8[[1]]$Local_flattening_ratio, na.rm = T), 0), 41) 
+})
+
+test_that("the GlobalFlatteningRatio output is the same as 41", {
+  expect_equal(round(result9, 3), 0.194) 
 })
 
 # test_that("the number rows in edgeScanMatrix outout is the same as the length of nodes", {

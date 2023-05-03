@@ -878,10 +878,10 @@ Kfullfillment = function(nodes, edges, minK=1, bipartite=FALSE) {
 }
 
 #' @title Local Network Flattening Ration 
-#' @description calculate local network flattening ratio for nodes. K-fullfillment is defined as defined as the ratio of a node’s minimized distance (d_opt) needed to connect to any k nearest neighbors to the total actual distance (d_act) of its connections. Nodes with low values prioritize distant connections. 
+#' @description calculate local network flattening ratio for nodes. 
 #' @param nodes nodes of graph (a list of named lists)
 #' @param edges edges of graph (a list of lists)
-#' @param minK (optional) minimum k value (degree) for a node to have a meaningful K-fullfillment value. K=1 means the node only has one connection.
+#' @param minK (optional) minimum k value (degree) for a node to have a meaningful local flattening ratio value. K=1 means the node only has one connection.
 #' @param bipartite (optional) boolean value of whether the data is a bipartite network
 #' @return a list of two dataframes. The first R dataframe contains a column of node label, and a column of Local_flattening_ratio associated with the node. The second R dataframe contains the edge pairs and a boolean column indicating whether the source node is k-nearest neighbor to the target node and vice versa.
 #' @details DETAILS
@@ -944,4 +944,54 @@ LocalFlatteningRatio = function(nodes, edges, minK=1, bipartite=FALSE) {
   edge_table = do.call(rbind.data.frame, edge_table)
   
   return(list(node_table, edge_table))
+}
+
+#' @title Global Network Flattening Ration 
+#' @description calculate global network flattening ratio for nodes. 
+#' @param nodes nodes of graph (a list of named lists)
+#' @param edges edges of graph (a list of lists)
+#' @param iter number of iterations to shuffle the order of nodes for various configuration of G_bar
+#' @return a numeric value that is the ratio of sum of distance between G_bar and G
+#' @details DETAILS
+#' @examples 
+#' \dontrun{
+#' if(interactive()){
+#'  #EXAMPLE1
+#' }
+#' @rdname GlobalFlatteningRatio
+#' @export 
+GlobalFlatteningRatio = function(nodes, edges, iter) {
+  # add K and Knn to each node
+  nodes2 = lapply(nodes, function(node) {
+    return(Add_K_connected_nodes_knn_to_node(nodes, edges, node, FALSE))
+  })
+  
+  # generate iteration number of node orders 
+  node_orders <- list()
+  for (i in 1:iter) {
+    node_orders[[i]] <- sample(names(nodes2))
+  }
+  
+  # Precompute the distance matrix
+  nodes_labels <- names(nodes2)
+  n <- length(nodes_labels)
+  distance_matrix <- matrix(NA, nrow = n, ncol = n, dimnames = list(nodes_labels, nodes_labels))
+  
+  for (i in seq_len(n)) {
+    #skip diagonal values 
+    for (j in seq_len(n)[-i]) {
+      distance <- euclidDistance(nodes2[[i]], nodes2[[j]]) 
+      # update both upper and lower side of the matrix since the network is undirected
+      distance_matrix[i, j] <- distance
+      distance_matrix[j, i] <- distance
+    }
+  }
+  
+  # Precompute the degree constraint matrix
+  degree_constraint_matrix <- sapply(nodes2, function(x) x$K)
+  
+  # calculate average distance of G_bar under iterations. 
+  avg_G_bar_sum = mean(sapply(node_orders, function(order) G_bar_sum_distances(order, nodes2, distance_matrix, degree_constraint_matrix)))
+  G_sum = Sum_connected_nodes_distances(nodes2, distance_matrix)
+  return(avg_G_bar_sum/G_sum)
 }

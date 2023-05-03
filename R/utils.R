@@ -473,3 +473,61 @@ LocalFlatteningRatio_for_one_node = function(nodes, node, minK, bipartite) {
   }
   return(fr)
 }
+
+# helper function for calculating global flattening ratio; sum of distance in G_bar
+G_bar_sum_distances <- function(node_orders, nodes_w_k_knn, distance_matrix, degree_constraint_matrix) {
+  degree_count <- sapply(nodes_w_k_knn, function(x) 0)
+  names(degree_count) <- node_orders
+  
+  nodes_labels <- names(nodes_w_k_knn)
+  n <- length(nodes_labels)
+  connection_counted <- matrix(FALSE, nrow = n, ncol = n, dimnames = list(nodes_labels, nodes_labels))
+  
+  total_distance <- 0
+  
+  for (i in seq_along(node_orders)) {
+    node <- node_orders[i]
+    neighbors <- nodes_w_k_knn[[node]]$Knn
+    
+    for (neighbor in neighbors) {
+      if (!connection_counted[node, neighbor] && degree_count[node] < degree_constraint_matrix[node] && degree_count[neighbor] < degree_constraint_matrix[neighbor]) {
+        total_distance <- total_distance + distance_matrix[node, neighbor]
+        degree_count[node] <- degree_count[node] + 1
+        degree_count[neighbor] <- degree_count[neighbor] + 1
+        connection_counted[node, neighbor] <- TRUE
+        connection_counted[neighbor, node] <- TRUE
+        #cat("Added distance for", node, neighbor, "in order:", node_orders, "\n")
+      }
+    }
+  }
+  return(total_distance)
+}
+
+# helper function for calculating global flattening ratio; sum of distance in G
+Sum_connected_nodes_distances <- function(nodes_w_k_knn, distance_matrix) {
+  # Initialize the sum
+  total_distance <- 0
+  
+  # Iterate through nodes in the nodes_w_k_knn
+  for (node in names(nodes_w_k_knn)) {
+    # Extract the connected nodes for the current node
+    connected_nodes <- nodes_w_k_knn[[node]]$connected_nodes
+    
+    if(!is.null(connected_nodes)) {
+      # Calculate the sum of distances for connected nodes
+      node_distance <- sum(sapply(connected_nodes, function(neighbor) {
+        # Add the distance if the node and neighbor indices are valid
+        # this is to only count distance once for undirected graph
+        if (neighbor > node) {
+          distance_matrix[node, neighbor]
+        } else {
+          0
+        }
+      }))
+    }
+    # Add the current node distance to the total distance
+    total_distance <- total_distance + node_distance
+  }
+  
+  return(total_distance)
+}

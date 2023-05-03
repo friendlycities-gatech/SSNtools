@@ -755,3 +755,40 @@ LocalFlatteningRatio = function(nodes, edges, minK=1, bipartite=FALSE) {
   
   return(list(node_table, edge_table))
 }
+
+# ------ Global Flattening Ratio -------- # 
+GlobalFlatteningRatio = function(nodes, edges, iter) {
+  # add K and Knn to each node
+  nodes2 = lapply(nodes, function(node) {
+    return(Add_K_connected_nodes_knn_to_node(nodes, edges, node, FALSE))
+  })
+  
+  # generate iteration number of node orders 
+  node_orders <- list()
+  for (i in 1:iter) {
+    node_orders[[i]] <- sample(names(nodes2))
+  }
+  
+  # Precompute the distance matrix
+  nodes_labels <- names(nodes2)
+  n <- length(nodes_labels)
+  distance_matrix <- matrix(NA, nrow = n, ncol = n, dimnames = list(nodes_labels, nodes_labels))
+  
+  for (i in seq_len(n)) {
+    #skip diagonal values 
+    for (j in seq_len(n)[-i]) {
+      distance <- euclidDistance(nodes2[[i]], nodes2[[j]]) 
+      # update both upper and lower side of the matrix since the network is undirected
+      distance_matrix[i, j] <- distance
+      distance_matrix[j, i] <- distance
+    }
+  }
+  
+  # Precompute the degree constraint matrix
+  degree_constraint_matrix <- sapply(nodes2, function(x) x$K)
+  
+  # calculate average distance of G_bar under iterations. 
+  avg_G_bar_sum = mean(sapply(node_orders, function(order) G_bar_sum_distances(order, nodes2, distance_matrix, degree_constraint_matrix)))
+  G_sum = Sum_connected_nodes_distances(nodes2, distance_matrix)
+  return(avg_G_bar_sum/G_sum)
+}

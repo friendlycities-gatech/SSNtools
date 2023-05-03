@@ -11,7 +11,7 @@ LocalFlatteningRatio(nodes, edges, minK = 1, bipartite = FALSE)
 
 \item{edges}{edges of graph (a list of lists)}
 
-\item{minK}{(optional) minimum k value (degree) for a node to have a meaningful K-fullfillment value. K=1 means the node only has one connection.}
+\item{minK}{(optional) minimum k value (degree) for a node to have a meaningful local flattening ratio value. K=1 means the node only has one connection.}
 
 \item{bipartite}{(optional) boolean value of whether the data is a bipartite network}
 }
@@ -19,7 +19,7 @@ LocalFlatteningRatio(nodes, edges, minK = 1, bipartite = FALSE)
 a list of two dataframes. The first R dataframe contains a column of node label, and a column of Local_flattening_ratio associated with the node. The second R dataframe contains the edge pairs and a boolean column indicating whether the source node is k-nearest neighbor to the target node and vice versa.
 }
 \description{
-calculate local network flattening ratio for nodes. K-fullfillment is defined as defined as the ratio of a node’s minimized distance (d_opt) needed to connect to any k nearest neighbors to the total actual distance (d_act) of its connections. Nodes with low values prioritize distant connections.
+calculate local network flattening ratio for nodes.
 }
 \details{
 DETAILS
