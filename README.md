@@ -5,7 +5,7 @@
 visualizing spatial social networks. It is implemented with base R
 syntax.
 
-**SSNtools** is currently equipped with three sets of functions:
+**SSNtools** is currently equipped with the following sets of functions:
 
 - **EdgeScan** and **NDScan**: a series of functions to calculate
   hotspots (i.e., heat) of spatial social networks. These functions
@@ -17,15 +17,29 @@ syntax.
 - **K-fullfillment**: A node-level metric to describe local
   (dis)connection. It is defined as the percentage of a node’s K-nearest
   neighbors that it is connected to over a node’s total number of
-  K-nearest neighbors. Here, `k` is equal to the node’s degree. Nodes
+  K-nearest neighbors. Here, `K` is equal to the node’s degree. Nodes
   that are exclusively connected to their nearest neighbors will have a
   k-fulfillment value of 1.
+
+- **Global network flattening ratio**: This metric is a network-level
+  metric to measure the spatial tightness of a network. The (global)
+  flattening ratio is the ratio of the sum of the Euclidean distance of
+  edges in a reconfigured graph where all nodes are connected to their
+  K-nearest neighbors versus the sum of the Euclidean distance of actual
+  edges in the current graph.
 
 - **Local network flattening ratio**: This metric (adapted from Sarkar
   et al. 2019) is defined as the ratio of a node’s minimized distance
   (`d_opt`) needed to connect to any k nearest neighbors to the total
   actual distance (`d_act`) of its connections. Nodes with low values
   prioritize distant connections.
+
+- **Linked Activity Spaces**: An Activity Space refers to the areas
+  captured by the standard deviation ellipse given an ego’s associated
+  locations. Thus, Linked Activity Spaces refers to a pair of activity
+  spaces of an ego and its alters. We quantify the overlaps between
+  linked activity spaces using the number of locations (e.g., POIs)
+  found in the intersections of activity spaces.
 
 Please see the tutorial [Spatial Social Networks (SSN) Visualization and
 Metrics with
@@ -36,6 +50,10 @@ implemented in the future.
 - [SSN Hostpots
   Detection](https://friendlycities-gatech.github.io/SSN_tutorial/advanced-ssn-metrics.html#ssn-hotspots-detection)
 - [K-fullfillment](https://friendlycities-gatech.github.io/SSN_tutorial/advanced-ssn-metrics.html#k-fullfillment)
+- [Flattening
+  Ratio](https://friendlycities-gatech.github.io/SSN_tutorial/advanced-ssn-metrics.html#flattening-ratio)
+- [Linked Activity
+  Spaces](https://friendlycities-gatech.github.io/SSN_tutorial/advanced-ssn-metrics.html#linked-activity-spaces)
 
 ## Installation
 
@@ -374,3 +392,7 @@ Sarkar, D., Andris, C., Chapman, C. A., & Sengupta, R. (2019). Metrics
 for characterizing network structure and node importance in Spatial
 Social Networks. *International Journal of Geographical Information
 Science*, 33(5), 1017-1039.
+
+Wang, Y., Kang, C., Bettencourt, L. M., Liu, Y., & Andris, C. (2015).
+Linked activity spaces: Embedding social networks in urban space.
+*Computational approaches for urban environments*, 313-336.
