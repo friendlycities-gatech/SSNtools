@@ -414,7 +414,8 @@ Kfullfillment_for_one_node = function(node, minK=1, bipartite=FALSE) {
   return(kf)
 }
 
-#K (node's degree), connected nodes, and Knn to a node's attributes
+#K (node's degree), connected nodes, and Knn to a node's attributes; 
+# connected nodes is NULL if the node is isolated. The attribute may be hidden if the node is printed, but should return NULL when called node[['connected_nodes']]
 Add_K_connected_nodes_knn_to_node = function(nodes, edges, node, bipartite) {
   if(bipartite) {
     matching_edges = lapply(edges, function(edge) {
@@ -524,6 +525,9 @@ Sum_connected_nodes_distances <- function(nodes_w_k_knn, distance_matrix) {
           0
         }
       }))
+    } else {
+      # if the node is isolated and have no connected nodes 
+      node_distance <- 0
     }
     # Add the current node distance to the total distance
     total_distance <- total_distance + node_distance

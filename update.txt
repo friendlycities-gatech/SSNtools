@@ -9,7 +9,7 @@ First, if you do not have it locally, clone SSNtools from Github: https://github
 1) run all functions in SSNtools.R and utils.R 
 2) copy and paste the specific function you want to change in a local file, overrite it, and then test run before you modify the current package codes. 
 2) modify the package codes if you are confident that the codes work correctly.
-3) update both SSNtools.R file and the oxy-SSNtools.R file
+3) update both SSNtools.R file and the oxy-SSNtools.R file. If only utils.R is updated, then no need to update oxy-SSNtools.R
 4) add test cases if necessary.
 5) go to Build (in R panel) and click install and restart. The package will be compiled and run through the test cases.
 6) check test cases if the build failed. 
